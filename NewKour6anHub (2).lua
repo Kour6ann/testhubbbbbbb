@@ -1,4 +1,4 @@
--- Kour6anHub - Modern Redesign v9.0 - FULLY PATCHED
+-- Kour6anHub - Modern Redesign v9.1 - MOBILE RESPONSIVE PATCH
 
 local Kour6anHub = {}
 Kour6anHub.__index = Kour6anHub
@@ -14,6 +14,87 @@ local HttpService = game:GetService("HttpService")
 local ReducedMotion = false
 local SHADOW_IMAGE = "rbxassetid://6014261993"
 local GRADIENT_IMAGE = "rbxassetid://14204231522"
+
+-- ==================== MOBILE RESPONSIVENESS SYSTEM ====================
+local Camera = workspace.CurrentCamera
+local ViewportSize = Camera.ViewportSize
+
+-- Detect if device is mobile
+local function isMobile()
+    return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+end
+
+-- Responsive size calculator
+local ResponsiveSize = {
+    -- Main window sizes
+    windowWidth = isMobile() and 0.95 or 620,
+    windowHeight = isMobile() and 0.85 or 420,
+    
+    -- Topbar
+    topbarHeight = isMobile() and 38 or 45,
+    
+    -- Tab container
+    tabContainerWidth = isMobile() and 100 or 160,
+    
+    -- Buttons and elements
+    buttonHeight = isMobile() and 32 or 36,
+    sliderHeight = isMobile() and 56 or 64,
+    tabButtonHeight = isMobile() and 36 or 42,
+    controlButtonSize = isMobile() and 40 or 35,
+    
+    -- Padding and spacing
+    padding = isMobile() and 8 or 10,
+    spacing = isMobile() and 6 or 8,
+    sectionPadding = isMobile() and 8 or 12,
+    
+    -- Text sizes
+    titleSize = isMobile() and 14 or 16,
+    textSize = isMobile() and 11 or 13,
+    buttonTextSize = isMobile() and 11 or 13,
+    labelSize = isMobile() and 12 or 14,
+    
+    -- Notifications
+    notifWidth = isMobile() and math.min(ViewportSize.X - 20, 280) or 320,
+    notifHeight = isMobile() and 60 or 70,
+    notifMargin = isMobile() and 10 or 20,
+    
+    -- Color picker dialog
+    colorDialogWidth = isMobile() and math.min(ViewportSize.X * 0.92, 340) or 440,
+    colorDialogHeight = isMobile() and math.min(ViewportSize.Y * 0.75, 300) or 340,
+    
+    -- Corner radius
+    cornerRadius = isMobile() and 8 or 10,
+    smallCornerRadius = isMobile() and 6 or 8,
+}
+
+-- Update responsive sizes on viewport change
+Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+    ViewportSize = Camera.ViewportSize
+    local mobile = isMobile()
+    
+    ResponsiveSize.windowWidth = mobile and 0.95 or 620
+    ResponsiveSize.windowHeight = mobile and 0.85 or 420
+    ResponsiveSize.topbarHeight = mobile and 38 or 45
+    ResponsiveSize.tabContainerWidth = mobile and 100 or 160
+    ResponsiveSize.buttonHeight = mobile and 32 or 36
+    ResponsiveSize.sliderHeight = mobile and 56 or 64
+    ResponsiveSize.tabButtonHeight = mobile and 36 or 42
+    ResponsiveSize.controlButtonSize = mobile and 40 or 35
+    ResponsiveSize.padding = mobile and 8 or 10
+    ResponsiveSize.spacing = mobile and 6 or 8
+    ResponsiveSize.sectionPadding = mobile and 8 or 12
+    ResponsiveSize.titleSize = mobile and 14 or 16
+    ResponsiveSize.textSize = mobile and 11 or 13
+    ResponsiveSize.buttonTextSize = mobile and 11 or 13
+    ResponsiveSize.labelSize = mobile and 12 or 14
+    ResponsiveSize.notifWidth = mobile and math.min(ViewportSize.X - 20, 280) or 320
+    ResponsiveSize.notifHeight = mobile and 60 or 70
+    ResponsiveSize.notifMargin = mobile and 10 or 20
+    ResponsiveSize.colorDialogWidth = mobile and math.min(ViewportSize.X * 0.92, 340) or 440
+    ResponsiveSize.colorDialogHeight = mobile and math.min(ViewportSize.Y * 0.75, 300) or 340
+    ResponsiveSize.cornerRadius = mobile and 8 or 10
+    ResponsiveSize.smallCornerRadius = mobile and 6 or 8
+end)
 
 -- Active tweens tracker
 local ActiveTweens = setmetatable({}, { __mode = "k" })
@@ -38,9 +119,8 @@ local function safeCall(fn, ...)
     return ok, res
 end
 
--- Unicode arrow helper - FIXED ENCODING
+-- Unicode arrow helper
 local function getArrowChar(direction)
-    -- Using proper unicode: down arrow (▼) U+25BC and up arrow (▲) U+25B2
     local unicode = direction == "down" and "▼" or "▲"
     local fallback = direction == "down" and "v" or "^"
     local success = pcall(function()
@@ -405,10 +485,16 @@ function Kour6anHub.CreateLib(title, themeName)
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = GuiParent
     
-    -- Main frame with shadow
+    -- Main frame with responsive sizing
     local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0, 620, 0, 420)
-    Main.Position = UDim2.new(0.5, -310, 0.5, -210)
+    if isMobile() then
+        Main.Size = UDim2.new(ResponsiveSize.windowWidth, 0, ResponsiveSize.windowHeight, 0)
+        Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Main.AnchorPoint = Vector2.new(0.5, 0.5)
+    else
+        Main.Size = UDim2.new(0, ResponsiveSize.windowWidth, 0, ResponsiveSize.windowHeight)
+        Main.Position = UDim2.new(0.5, -ResponsiveSize.windowWidth/2, 0.5, -ResponsiveSize.windowHeight/2)
+    end
     Main.BackgroundColor3 = theme.Background
     Main.BorderSizePixel = 0
     Main.Active = true
@@ -416,23 +502,22 @@ function Kour6anHub.CreateLib(title, themeName)
     Main.Parent = ScreenGui
 
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 10)
+    MainCorner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
     MainCorner.Parent = Main
 
     addShadow(Main, 0.65)
 
-    -- Topbar with modern styling
+    -- Topbar with responsive height
     local Topbar = Instance.new("Frame")
-    Topbar.Size = UDim2.new(1, 0, 0, 45)
+    Topbar.Size = UDim2.new(1, 0, 0, ResponsiveSize.topbarHeight)
     Topbar.BackgroundColor3 = theme.SectionBackground
     Topbar.Active = true
     Topbar.Parent = Main
 
     local TopbarCorner = Instance.new("UICorner")
-    TopbarCorner.CornerRadius = UDim.new(0, 10)
+    TopbarCorner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
     TopbarCorner.Parent = Topbar
 
-    -- Subtle divider line under topbar
     local TopbarDivider = Instance.new("Frame")
     TopbarDivider.Size = UDim2.new(1, 0, 0, 1)
     TopbarDivider.Position = UDim2.new(0, 0, 1, -1)
@@ -441,7 +526,7 @@ function Kour6anHub.CreateLib(title, themeName)
     TopbarDivider.BorderSizePixel = 0
     TopbarDivider.Parent = Topbar
 
-    -- Title with icon support
+    -- Title with responsive text
     local Title = Instance.new("TextLabel")
     Title.Text = title or "Kour6anHub"
     Title.Size = UDim2.new(1, -100, 1, 0)
@@ -450,23 +535,23 @@ function Kour6anHub.CreateLib(title, themeName)
     Title.TextColor3 = theme.Text
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 16
+    Title.TextSize = ResponsiveSize.titleSize
     Title.Parent = Topbar
 
-    -- Window controls with better styling - FIXED CHARACTER ENCODING
+    -- Window controls with responsive sizing
     local MinimizeBtn = Instance.new("TextButton")
-    MinimizeBtn.Size = UDim2.new(0, 35, 0, 35)
-    MinimizeBtn.Position = UDim2.new(1, -80, 0.5, -17.5)
+    MinimizeBtn.Size = UDim2.new(0, ResponsiveSize.controlButtonSize, 0, ResponsiveSize.controlButtonSize)
+    MinimizeBtn.Position = UDim2.new(1, -(ResponsiveSize.controlButtonSize * 2 + 5), 0.5, -ResponsiveSize.controlButtonSize/2)
     MinimizeBtn.BackgroundColor3 = theme.ButtonBackground
     MinimizeBtn.TextColor3 = theme.Text
     MinimizeBtn.Font = Enum.Font.GothamBold
-    MinimizeBtn.TextSize = 16
-    MinimizeBtn.Text = "−"  -- FIXED: Proper minus sign (U+2212)
+    MinimizeBtn.TextSize = ResponsiveSize.titleSize
+    MinimizeBtn.Text = "−"
     MinimizeBtn.AutoButtonColor = false
     MinimizeBtn.Parent = Topbar
 
     local MinimizeBtnCorner = Instance.new("UICorner")
-    MinimizeBtnCorner.CornerRadius = UDim.new(0, 6)
+    MinimizeBtnCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
     MinimizeBtnCorner.Parent = MinimizeBtn
 
     local MinimizeBtnStroke = Instance.new("UIStroke")
@@ -477,18 +562,18 @@ function Kour6anHub.CreateLib(title, themeName)
     MinimizeBtnStroke.Parent = MinimizeBtn
 
     local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0, 35, 0, 35)
-    CloseBtn.Position = UDim2.new(1, -40, 0.5, -17.5)
+    CloseBtn.Size = UDim2.new(0, ResponsiveSize.controlButtonSize, 0, ResponsiveSize.controlButtonSize)
+    CloseBtn.Position = UDim2.new(1, -(ResponsiveSize.controlButtonSize + 5), 0.5, -ResponsiveSize.controlButtonSize/2)
     CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
     CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 16
-    CloseBtn.Text = "×"  -- FIXED: Proper multiplication sign (U+00D7)
+    CloseBtn.TextSize = ResponsiveSize.titleSize
+    CloseBtn.Text = "×"
     CloseBtn.AutoButtonColor = false
     CloseBtn.Parent = Topbar
 
     local CloseBtnCorner = Instance.new("UICorner")
-    CloseBtnCorner.CornerRadius = UDim.new(0, 6)
+    CloseBtnCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
     CloseBtnCorner.Parent = CloseBtn
 
     local CloseBtnStroke = Instance.new("UIStroke")
@@ -511,19 +596,18 @@ function Kour6anHub.CreateLib(title, themeName)
     end
     _GLOBAL_CONN_REGISTRY = {}
 
-    -- Tab container with modern styling
+    -- Tab container with responsive width
     local TabContainer = Instance.new("Frame")
-    TabContainer.Size = UDim2.new(0, 160, 1, -45)
-    TabContainer.Position = UDim2.new(0, 0, 0, 45)
+    TabContainer.Size = UDim2.new(0, ResponsiveSize.tabContainerWidth, 1, -ResponsiveSize.topbarHeight)
+    TabContainer.Position = UDim2.new(0, 0, 0, ResponsiveSize.topbarHeight)
     TabContainer.BackgroundColor3 = theme.TabBackground
     TabContainer.Active = true
     TabContainer.Parent = Main
 
     local TabContainerCorner = Instance.new("UICorner")
-    TabContainerCorner.CornerRadius = UDim.new(0, 10)
+    TabContainerCorner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
     TabContainerCorner.Parent = TabContainer
 
-    -- Subtle border for tab container
     local TabContainerStroke = Instance.new("UIStroke")
     TabContainerStroke.Color = theme.ButtonBorder
     TabContainerStroke.Thickness = 1
@@ -533,21 +617,21 @@ function Kour6anHub.CreateLib(title, themeName)
 
     local TabList = Instance.new("UIListLayout")
     TabList.SortOrder = Enum.SortOrder.LayoutOrder
-    TabList.Padding = UDim.new(0, 8)
+    TabList.Padding = UDim.new(0, ResponsiveSize.spacing)
     TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     TabList.Parent = TabContainer
 
     local TabPadding = Instance.new("UIPadding")
-    TabPadding.PaddingTop = UDim.new(0, 10)
-    TabPadding.PaddingBottom = UDim.new(0, 10)
-    TabPadding.PaddingLeft = UDim.new(0, 10)
-    TabPadding.PaddingRight = UDim.new(0, 10)
+    TabPadding.PaddingTop = UDim.new(0, ResponsiveSize.padding)
+    TabPadding.PaddingBottom = UDim.new(0, ResponsiveSize.padding)
+    TabPadding.PaddingLeft = UDim.new(0, ResponsiveSize.padding)
+    TabPadding.PaddingRight = UDim.new(0, ResponsiveSize.padding)
     TabPadding.Parent = TabContainer
 
-    -- Content area
+    -- Content area with responsive positioning
     local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1, -170, 1, -45)
-    Content.Position = UDim2.new(0, 170, 0, 45)
+    Content.Size = UDim2.new(1, -(ResponsiveSize.tabContainerWidth + ResponsiveSize.padding), 1, -ResponsiveSize.topbarHeight)
+    Content.Position = UDim2.new(0, ResponsiveSize.tabContainerWidth + ResponsiveSize.padding, 0, ResponsiveSize.topbarHeight)
     Content.BackgroundTransparency = 1
     Content.Active = true
     Content.Parent = Main
@@ -565,13 +649,13 @@ function Kour6anHub.CreateLib(title, themeName)
     Window._storedPosition = Main.Position
     Window._storedSize = Main.Size
 
-    -- Notification system
+    -- Notification system with responsive sizing
     Window._notifications = {}
     Window._notifConfig = {
-        width = 320,
-        height = 70,
-        spacing = 10,
-        margin = 20,
+        width = ResponsiveSize.notifWidth,
+        height = ResponsiveSize.notifHeight,
+        spacing = ResponsiveSize.spacing,
+        margin = ResponsiveSize.notifMargin,
         defaultDuration = 4
     }
 
@@ -636,10 +720,9 @@ function Kour6anHub.CreateLib(title, themeName)
         notif.Parent = Window._notificationHolder
 
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 10)
+        corner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
         corner.Parent = notif
 
-        -- Add border stroke
         local notifStroke = Instance.new("UIStroke")
         notifStroke.Color = theme.ButtonBorder
         notifStroke.Thickness = 1
@@ -647,7 +730,6 @@ function Kour6anHub.CreateLib(title, themeName)
         notifStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         notifStroke.Parent = notif
 
-        -- Add subtle shadow
         addShadow(notif, 0.8)
 
         local accent = Instance.new("Frame")
@@ -658,29 +740,29 @@ function Kour6anHub.CreateLib(title, themeName)
         accent.Parent = notif
         
         local acorner = Instance.new("UICorner")
-        acorner.CornerRadius = UDim.new(0, 10)
+        acorner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
         acorner.Parent = accent
 
         local ttl = Instance.new("TextLabel")
         ttl.Size = UDim2.new(1, -16, 0, 22)
-        ttl.Position = UDim2.new(0, 12, 0, 8)
+        ttl.Position = UDim2.new(0, 12, 0, isMobile() and 6 or 8)
         ttl.BackgroundTransparency = 1
         ttl.TextXAlignment = Enum.TextXAlignment.Left
         ttl.TextYAlignment = Enum.TextYAlignment.Top
         ttl.Font = Enum.Font.GothamBold
-        ttl.TextSize = 14
+        ttl.TextSize = isMobile() and 12 or 14
         ttl.TextColor3 = theme.Text
         ttl.Text = tostring(titleText or "Notification")
         ttl.Parent = notif
 
         local body = Instance.new("TextLabel")
-        body.Size = UDim2.new(1, -16, 0, 38)
-        body.Position = UDim2.new(0, 12, 0, 30)
+        body.Size = UDim2.new(1, -16, 0, isMobile() and 32 or 38)
+        body.Position = UDim2.new(0, 12, 0, isMobile() and 26 or 30)
         body.BackgroundTransparency = 1
         body.TextXAlignment = Enum.TextXAlignment.Left
         body.TextYAlignment = Enum.TextYAlignment.Top
         body.Font = Enum.Font.Gotham
-        body.TextSize = 12
+        body.TextSize = isMobile() and 10 or 12
         body.TextColor3 = theme.SubText
         body.Text = tostring(bodyText or "")
         body.TextWrapped = true
@@ -911,7 +993,7 @@ function Kour6anHub.CreateLib(title, themeName)
     function Window:Hide()
         if not Window._uiVisible then return end
         Window._storedPosition = Main.Position
-        tween(Main, {Position = UDim2.new(0.5, -310, 0.5, -800)}, {duration = 0.2})
+        tween(Main, {Position = UDim2.new(0.5, isMobile() and 0 or -310, 0.5, -800)}, {duration = 0.2})
         task.delay(0.2, function()
             if ScreenGui then
                 ScreenGui.Enabled = false
@@ -928,7 +1010,7 @@ function Kour6anHub.CreateLib(title, themeName)
             Window:Restore()
         end
 
-        local target = Window._storedPosition or UDim2.new(0.5, -310, 0.5, -210)
+        local target = Window._storedPosition or (isMobile() and UDim2.new(0.5, 0, 0.5, 0) or UDim2.new(0.5, -310, 0.5, -210))
         tween(Main, {Position = target}, {duration = 0.2})
         Window._uiVisible = true
     end
@@ -965,7 +1047,7 @@ function Kour6anHub.CreateLib(title, themeName)
         self._uiMinimized = true
 
         local header = (self.Topbar or Topbar)
-        local headerHeight = (header and header.AbsoluteSize and header.AbsoluteSize.Y) or 45
+        local headerHeight = (header and header.AbsoluteSize and header.AbsoluteSize.Y) or ResponsiveSize.topbarHeight
 
         if self.Main then
             pcall(function()
@@ -1064,20 +1146,20 @@ function Kour6anHub.CreateLib(title, themeName)
         end
     end
 
-    -- Tab creation
+    -- Tab creation with responsive sizing
     function Window:NewTab(tabName, icon)
         local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(1, -20, 0, 42)
+        TabButton.Size = UDim2.new(1, -ResponsiveSize.padding*2, 0, ResponsiveSize.tabButtonHeight)
         TabButton.BackgroundColor3 = theme.ButtonBackground
         TabButton.TextColor3 = theme.Text
         TabButton.Font = Enum.Font.Gotham
-        TabButton.TextSize = 14
+        TabButton.TextSize = ResponsiveSize.buttonTextSize
         TabButton.Text = tabName or "Tab"
         TabButton.AutoButtonColor = false
         TabButton.Parent = TabContainer
 
         local TabButtonCorner = Instance.new("UICorner")
-        TabButtonCorner.CornerRadius = UDim.new(0, 8)
+        TabButtonCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
         TabButtonCorner.Parent = TabButton
 
         local TabButtonStroke = Instance.new("UIStroke")
@@ -1088,10 +1170,10 @@ function Kour6anHub.CreateLib(title, themeName)
         TabButtonStroke.Parent = TabButton
 
         local TabButtonPadding = Instance.new("UIPadding")
-        TabButtonPadding.PaddingTop = UDim.new(0, 10)
-        TabButtonPadding.PaddingBottom = UDim.new(0, 10)
-        TabButtonPadding.PaddingLeft = UDim.new(0, 12)
-        TabButtonPadding.PaddingRight = UDim.new(0, 12)
+        TabButtonPadding.PaddingTop = UDim.new(0, ResponsiveSize.padding)
+        TabButtonPadding.PaddingBottom = UDim.new(0, ResponsiveSize.padding)
+        TabButtonPadding.PaddingLeft = UDim.new(0, ResponsiveSize.sectionPadding)
+        TabButtonPadding.PaddingRight = UDim.new(0, ResponsiveSize.sectionPadding)
         TabButtonPadding.Parent = TabButton
 
         debouncedHover(TabButton,
@@ -1099,7 +1181,7 @@ function Kour6anHub.CreateLib(title, themeName)
                 if not TabButton:GetAttribute("active") then
                     tween(TabButton, {
                         BackgroundColor3 = theme.ButtonHover, 
-                        Size = UDim2.new(1, -16, 0, 44)
+                        Size = UDim2.new(1, -ResponsiveSize.padding*1.6, 0, ResponsiveSize.tabButtonHeight + 2)
                     }, {duration = 0.12})
                     tween(TabButtonStroke, {Transparency = 0.5}, {duration = 0.12})
                 end
@@ -1108,12 +1190,12 @@ function Kour6anHub.CreateLib(title, themeName)
                 if TabButton:GetAttribute("active") then
                     tween(TabButton, {
                         BackgroundColor3 = theme.Accent, 
-                        Size = UDim2.new(1, -20, 0, 42)
+                        Size = UDim2.new(1, -ResponsiveSize.padding*2, 0, ResponsiveSize.tabButtonHeight)
                     }, {duration = 0.12})
                 else
                     tween(TabButton, {
                         BackgroundColor3 = theme.ButtonBackground, 
-                        Size = UDim2.new(1, -20, 0, 42)
+                        Size = UDim2.new(1, -ResponsiveSize.padding*2, 0, ResponsiveSize.tabButtonHeight)
                     }, {duration = 0.12})
                     tween(TabButtonStroke, {Transparency = 0.7}, {duration = 0.12})
                 end
@@ -1123,7 +1205,7 @@ function Kour6anHub.CreateLib(title, themeName)
         local TabFrame = Instance.new("ScrollingFrame")
         TabFrame.Size = UDim2.new(1, 0, 1, 0)
         TabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-        TabFrame.ScrollBarThickness = 6
+        TabFrame.ScrollBarThickness = isMobile() and 4 or 6
         TabFrame.ScrollBarImageColor3 = theme.Accent
         TabFrame.BackgroundTransparency = 1
         TabFrame.BorderSizePixel = 0
@@ -1132,14 +1214,14 @@ function Kour6anHub.CreateLib(title, themeName)
 
         local TabLayout = Instance.new("UIListLayout")
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        TabLayout.Padding = UDim.new(0, 12)
+        TabLayout.Padding = UDim.new(0, ResponsiveSize.sectionPadding)
         TabLayout.Parent = TabFrame
 
         local TabFramePadding = Instance.new("UIPadding")
-        TabFramePadding.PaddingTop = UDim.new(0, 10)
-        TabFramePadding.PaddingLeft = UDim.new(0, 10)
-        TabFramePadding.PaddingRight = UDim.new(0, 10)
-        TabFramePadding.PaddingBottom = UDim.new(0, 10)
+        TabFramePadding.PaddingTop = UDim.new(0, ResponsiveSize.padding)
+        TabFramePadding.PaddingLeft = UDim.new(0, ResponsiveSize.padding)
+        TabFramePadding.PaddingRight = UDim.new(0, ResponsiveSize.padding)
+        TabFramePadding.PaddingBottom = UDim.new(0, ResponsiveSize.padding)
         TabFramePadding.Parent = TabFrame
 
         TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -1196,14 +1278,14 @@ function Kour6anHub.CreateLib(title, themeName)
 
         function TabObj:NewSection(sectionName)
             local Section = Instance.new("Frame")
-            Section.Size = UDim2.new(1, -10, 0, 50)
+            Section.Size = UDim2.new(1, -ResponsiveSize.padding, 0, 50)
             Section.BackgroundColor3 = theme.SectionBackground
             Section.Parent = TabFrame
             Section.AutomaticSize = Enum.AutomaticSize.Y
             Section.Name = "_section"
 
             local SectionCorner = Instance.new("UICorner")
-            SectionCorner.CornerRadius = UDim.new(0, 10)
+            SectionCorner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
             SectionCorner.Parent = Section
 
             local SectionStroke = Instance.new("UIStroke")
@@ -1215,14 +1297,14 @@ function Kour6anHub.CreateLib(title, themeName)
 
             local SectionLayout = Instance.new("UIListLayout")
             SectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            SectionLayout.Padding = UDim.new(0, 8)
+            SectionLayout.Padding = UDim.new(0, ResponsiveSize.spacing)
             SectionLayout.Parent = Section
 
             local SectionPadding = Instance.new("UIPadding")
-            SectionPadding.PaddingTop = UDim.new(0, 12)
-            SectionPadding.PaddingBottom = UDim.new(0, 12)
-            SectionPadding.PaddingLeft = UDim.new(0, 12)
-            SectionPadding.PaddingRight = UDim.new(0, 12)
+            SectionPadding.PaddingTop = UDim.new(0, ResponsiveSize.sectionPadding)
+            SectionPadding.PaddingBottom = UDim.new(0, ResponsiveSize.sectionPadding)
+            SectionPadding.PaddingLeft = UDim.new(0, ResponsiveSize.sectionPadding)
+            SectionPadding.PaddingRight = UDim.new(0, ResponsiveSize.sectionPadding)
             SectionPadding.Parent = Section
 
             local Label = Instance.new("TextLabel")
@@ -1231,7 +1313,7 @@ function Kour6anHub.CreateLib(title, themeName)
             Label.BackgroundTransparency = 1
             Label.TextColor3 = theme.SubText
             Label.Font = Enum.Font.GothamBold
-            Label.TextSize = 14
+            Label.TextSize = ResponsiveSize.labelSize
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Section
 
@@ -1244,7 +1326,7 @@ function Kour6anHub.CreateLib(title, themeName)
                 lbl.BackgroundTransparency = 1
                 lbl.TextColor3 = theme.Text
                 lbl.Font = Enum.Font.Gotham
-                lbl.TextSize = 13
+                lbl.TextSize = ResponsiveSize.textSize
                 lbl.TextXAlignment = Enum.TextXAlignment.Left
                 lbl.Parent = Section
                 return lbl
@@ -1275,16 +1357,16 @@ function Kour6anHub.CreateLib(title, themeName)
 
                 local Btn = Instance.new("TextButton")
                 Btn.Text = text
-                Btn.Size = UDim2.new(1, 0, 0, 36)
+                Btn.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                 Btn.BackgroundColor3 = theme.ButtonBackground
                 Btn.TextColor3 = theme.Text
                 Btn.Font = Enum.Font.Gotham
-                Btn.TextSize = 13
+                Btn.TextSize = ResponsiveSize.textSize
                 Btn.AutoButtonColor = false
                 Btn.Parent = Section
 
                 local BtnCorner = Instance.new("UICorner")
-                BtnCorner.CornerRadius = UDim.new(0, 8)
+                BtnCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
                 BtnCorner.Parent = Btn
 
                 local BtnStroke = Instance.new("UIStroke")
@@ -1298,14 +1380,14 @@ function Kour6anHub.CreateLib(title, themeName)
                     function()
                         tween(Btn, {
                             BackgroundColor3 = theme.ButtonHover, 
-                            Size = UDim2.new(1, -4, 0, 38)
+                            Size = UDim2.new(1, -4, 0, ResponsiveSize.buttonHeight + 2)
                         }, {duration = 0.1})
                         tween(BtnStroke, {Transparency = 0.5}, {duration = 0.1})
                     end,
                     function()
                         tween(Btn, {
                             BackgroundColor3 = theme.ButtonBackground, 
-                            Size = UDim2.new(1, 0, 0, 36)
+                            Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                         }, {duration = 0.1})
                         tween(BtnStroke, {Transparency = 0.7}, {duration = 0.1})
                     end
@@ -1314,7 +1396,7 @@ function Kour6anHub.CreateLib(title, themeName)
                 Btn.MouseButton1Click:Connect(function()
                     local t1 = tween(Btn, {
                         BackgroundColor3 = theme.Accent, 
-                        Size = UDim2.new(1, -6, 0, 34)
+                        Size = UDim2.new(1, -6, 0, ResponsiveSize.buttonHeight - 2)
                     }, {duration = 0.08})
                     tween(BtnStroke, {
                         Color = theme.Accent, 
@@ -1328,7 +1410,7 @@ function Kour6anHub.CreateLib(title, themeName)
                             pcall(function() c:Disconnect() end)
                             tween(Btn, {
                                 BackgroundColor3 = theme.ButtonBackground, 
-                                Size = UDim2.new(1, 0, 0, 36)
+                                Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                             }, {duration = 0.15})
                             tween(BtnStroke, {
                                 Color = theme.ButtonBorder, 
@@ -1340,7 +1422,7 @@ function Kour6anHub.CreateLib(title, themeName)
                         task.delay(0.09, function() 
                             tween(Btn, {
                                 BackgroundColor3 = theme.ButtonBackground, 
-                                Size = UDim2.new(1, 0, 0, 36)
+                                Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                             }, {duration = 0.15})
                             tween(BtnStroke, {
                                 Color = theme.ButtonBorder, 
@@ -1365,16 +1447,16 @@ function Kour6anHub.CreateLib(title, themeName)
 
                 local ToggleBtn = Instance.new("TextButton")
                 ToggleBtn.Text = text .. (state and " [ON]" or " [OFF]")
-                ToggleBtn.Size = UDim2.new(1, 0, 0, 36)
+                ToggleBtn.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                 ToggleBtn.BackgroundColor3 = state and theme.Accent or theme.ButtonBackground
                 ToggleBtn.TextColor3 = state and Color3.fromRGB(255,255,255) or theme.Text
                 ToggleBtn.Font = Enum.Font.Gotham
-                ToggleBtn.TextSize = 13
+                ToggleBtn.TextSize = ResponsiveSize.textSize
                 ToggleBtn.AutoButtonColor = false
                 ToggleBtn.Parent = Section
 
                 local ToggleCorner = Instance.new("UICorner")
-                ToggleCorner.CornerRadius = UDim.new(0, 8)
+                ToggleCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
                 ToggleCorner.Parent = ToggleBtn
 
                 local ToggleStroke = Instance.new("UIStroke")
@@ -1392,15 +1474,15 @@ function Kour6anHub.CreateLib(title, themeName)
                         if not state then
                             tween(ToggleBtn, {
                                 BackgroundColor3 = theme.ButtonHover, 
-                                Size = UDim2.new(1, -4, 0, 38)
+                                Size = UDim2.new(1, -4, 0, ResponsiveSize.buttonHeight + 2)
                             }, {duration = 0.1})
                             tween(ToggleStroke, {Transparency = 0.5}, {duration = 0.1})
                         else
-                            tween(ToggleBtn, {Size = UDim2.new(1, -4, 0, 38)}, {duration = 0.1})
+                            tween(ToggleBtn, {Size = UDim2.new(1, -4, 0, ResponsiveSize.buttonHeight + 2)}, {duration = 0.1})
                         end
                     end,
                     function()
-                        tween(ToggleBtn, {Size = UDim2.new(1, 0, 0, 36)}, {duration = 0.1})
+                        tween(ToggleBtn, {Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)}, {duration = 0.1})
                         if not state then
                             tween(ToggleStroke, {Transparency = 0.7}, {duration = 0.1})
                         end
@@ -1408,16 +1490,16 @@ function Kour6anHub.CreateLib(title, themeName)
                 )
 
                 ToggleBtn.MouseButton1Click:Connect(function()
-                    local t1 = tween(ToggleBtn, {Size = UDim2.new(1, -6, 0, 34)}, {duration = 0.08})
+                    local t1 = tween(ToggleBtn, {Size = UDim2.new(1, -6, 0, ResponsiveSize.buttonHeight - 2)}, {duration = 0.08})
                     if t1 then
                         local c
                         c = t1.Completed:Connect(function()
                             pcall(function() c:Disconnect() end)
-                            tween(ToggleBtn, {Size = UDim2.new(1, 0, 0, 36)}, {duration = 0.15})
+                            tween(ToggleBtn, {Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)}, {duration = 0.15})
                         end)
                     else
                         task.delay(0.09, function() 
-                            tween(ToggleBtn, {Size = UDim2.new(1, 0, 0, 36)}, {duration = 0.15}) 
+                            tween(ToggleBtn, {Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)}, {duration = 0.15}) 
                         end)
                     end
                     
@@ -1496,7 +1578,7 @@ function Kour6anHub.CreateLib(title, themeName)
                 end
 
                 local wrap = Instance.new("Frame")
-                wrap.Size = UDim2.new(1, 0, 0, 64)
+                wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.sliderHeight)
                 wrap.BackgroundTransparency = 1
                 wrap.Parent = Section
 
@@ -1507,7 +1589,7 @@ function Kour6anHub.CreateLib(title, themeName)
                 lbl.BackgroundTransparency = 1
                 lbl.TextColor3 = theme.SubText
                 lbl.Font = Enum.Font.Gotham
-                lbl.TextSize = 13
+                lbl.TextSize = ResponsiveSize.textSize
                 lbl.TextXAlignment = Enum.TextXAlignment.Left
                 lbl.Parent = wrap
 
@@ -1518,18 +1600,18 @@ function Kour6anHub.CreateLib(title, themeName)
                 valueLbl.BackgroundTransparency = 1
                 valueLbl.TextColor3 = theme.Accent
                 valueLbl.Font = Enum.Font.GothamBold
-                valueLbl.TextSize = 13
+                valueLbl.TextSize = ResponsiveSize.textSize
                 valueLbl.TextXAlignment = Enum.TextXAlignment.Right
                 valueLbl.Parent = wrap
 
                 local sliderBg = Instance.new("Frame")
-                sliderBg.Size = UDim2.new(1, -8, 0, 24)
-                sliderBg.Position = UDim2.new(0, 4, 0, 36)
+                sliderBg.Size = UDim2.new(1, -8, 0, isMobile() and 20 or 24)
+                sliderBg.Position = UDim2.new(0, 4, 0, isMobile() and 32 or 36)
                 sliderBg.BackgroundColor3 = theme.InputBackground
                 sliderBg.Parent = wrap
 
                 local bgCorner = Instance.new("UICorner")
-                bgCorner.CornerRadius = UDim.new(0, 12)
+                bgCorner.CornerRadius = UDim.new(0, isMobile() and 10 or 12)
                 bgCorner.Parent = sliderBg
 
                 local bgStroke = Instance.new("UIStroke")
@@ -1551,12 +1633,13 @@ function Kour6anHub.CreateLib(title, themeName)
                 fill.ZIndex = 2
 
                 local fillCorner = Instance.new("UICorner")
-                fillCorner.CornerRadius = UDim.new(0, 12)
+                fillCorner.CornerRadius = UDim.new(0, isMobile() and 10 or 12)
                 fillCorner.Parent = fill
 
+                local knobSize = isMobile() and 16 or 18
                 local knob = Instance.new("Frame")
-                knob.Size = UDim2.new(0, 18, 0, 18)
-                knob.Position = UDim2.new(initialRel, -9, 0.5, -9)
+                knob.Size = UDim2.new(0, knobSize, 0, knobSize)
+                knob.Position = UDim2.new(initialRel, -knobSize/2, 0.5, -knobSize/2)
                 knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
                 knob.BorderSizePixel = 0
                 knob.Parent = sliderBg
@@ -1585,7 +1668,7 @@ function Kour6anHub.CreateLib(title, themeName)
 
                     local finalRel = (newValue - min) / (max - min)
                     tween(fill, {Size = UDim2.new(finalRel, 0, 1, 0)}, {duration = 0.05})
-                    tween(knob, {Position = UDim2.new(finalRel, -9, 0.5, -9)}, {duration = 0.05})
+                    tween(knob, {Position = UDim2.new(finalRel, -knobSize/2, 0.5, -knobSize/2)}, {duration = 0.05})
                     valueLbl.Text = tostring(newValue)
 
                     if callback and type(callback) == "function" then
@@ -1599,9 +1682,10 @@ function Kour6anHub.CreateLib(title, themeName)
                         dragging = true
                         updateSlider(input.Position)
                         
+                        local expandedSize = knobSize + 4
                         tween(knob, {
-                            Size = UDim2.new(0, 22, 0, 22), 
-                            Position = UDim2.new((currentValue - min) / (max - min), -11, 0.5, -11)
+                            Size = UDim2.new(0, expandedSize, 0, expandedSize), 
+                            Position = UDim2.new((currentValue - min) / (max - min), -expandedSize/2, 0.5, -expandedSize/2)
                         }, {duration = 0.1})
                         tween(knobStroke, {Thickness = 3}, {duration = 0.1})
                     end
@@ -1622,8 +1706,8 @@ function Kour6anHub.CreateLib(title, themeName)
                         dragging = false
                         
                         tween(knob, {
-                            Size = UDim2.new(0, 18, 0, 18), 
-                            Position = UDim2.new((currentValue - min) / (max - min), -9, 0.5, -9)
+                            Size = UDim2.new(0, knobSize, 0, knobSize), 
+                            Position = UDim2.new((currentValue - min) / (max - min), -knobSize/2, 0.5, -knobSize/2)
                         }, {duration = 0.1})
                         tween(knobStroke, {Thickness = 2}, {duration = 0.1})
                     end
@@ -1661,7 +1745,7 @@ function Kour6anHub.CreateLib(title, themeName)
                         
                         local rel = (currentValue - min) / (max - min)
                         fill.Size = UDim2.new(rel, 0, 1, 0)
-                        knob.Position = UDim2.new(rel, -9, 0.5, -9)
+                        knob.Position = UDim2.new(rel, -knobSize/2, 0.5, -knobSize/2)
                         valueLbl.Text = tostring(currentValue)
                         
                         if callback and type(callback) == "function" then
@@ -1690,7 +1774,7 @@ function Kour6anHub.CreateLib(title, themeName)
 
             function SectionObj:NewTextbox(placeholder, defaultText, callback)
                 local wrap = Instance.new("Frame")
-                wrap.Size = UDim2.new(1, 0, 0, 36)
+                wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                 wrap.BackgroundTransparency = 1
                 wrap.Parent = Section
 
@@ -1703,12 +1787,12 @@ function Kour6anHub.CreateLib(title, themeName)
                 box.Text = defaultText or ""
                 box.PlaceholderText = placeholder or ""
                 box.Font = Enum.Font.Gotham
-                box.TextSize = 13
+                box.TextSize = ResponsiveSize.textSize
                 box.TextXAlignment = Enum.TextXAlignment.Left
                 box.Parent = wrap
 
                 local boxCorner = Instance.new("UICorner")
-                boxCorner.CornerRadius = UDim.new(0, 8)
+                boxCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
                 boxCorner.Parent = box
 
                 local boxStroke = Instance.new("UIStroke")
@@ -1751,7 +1835,7 @@ function Kour6anHub.CreateLib(title, themeName)
 
             function SectionObj:NewKeybind(desc, defaultKey, callback)
                 local wrap = Instance.new("Frame")
-                wrap.Size = UDim2.new(1, 0, 0, 36)
+                wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                 wrap.BackgroundTransparency = 1
                 wrap.Parent = Section
 
@@ -1762,12 +1846,12 @@ function Kour6anHub.CreateLib(title, themeName)
                 btn.BackgroundColor3 = theme.InputBackground
                 btn.TextColor3 = theme.Text
                 btn.Font = Enum.Font.Gotham
-                btn.TextSize = 13
+                btn.TextSize = ResponsiveSize.textSize
                 btn.AutoButtonColor = false
                 btn.Parent = wrap
 
                 local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 8)
+                btnCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
                 btnCorner.Parent = btn
 
                 local btnStroke = Instance.new("UIStroke")
@@ -1861,7 +1945,7 @@ function Kour6anHub.CreateLib(title, themeName)
                 end
 
                 local wrap = Instance.new("Frame")
-                wrap.Size = UDim2.new(1, 0, 0, 36)
+                wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                 wrap.BackgroundTransparency = 1
                 wrap.Parent = Section
 
@@ -1872,13 +1956,13 @@ function Kour6anHub.CreateLib(title, themeName)
                 btn.BackgroundColor3 = theme.ButtonBackground
                 btn.TextColor3 = theme.Text
                 btn.Font = Enum.Font.Gotham
-                btn.TextSize = 13
+                btn.TextSize = ResponsiveSize.textSize
                 btn.AutoButtonColor = false
                 btn.TextXAlignment = Enum.TextXAlignment.Left
                 btn.Parent = wrap
 
                 local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 8)
+                btnCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
                 btnCorner.Parent = btn
 
                 local btnStroke = Instance.new("UIStroke")
@@ -1900,14 +1984,14 @@ function Kour6anHub.CreateLib(title, themeName)
                 arrow.BackgroundTransparency = 1
                 arrow.TextColor3 = theme.SubText
                 arrow.Font = Enum.Font.Gotham
-                arrow.TextSize = 12
+                arrow.TextSize = isMobile() and 10 or 12
                 arrow.TextXAlignment = Enum.TextXAlignment.Center
                 arrow.Parent = btn
 
                 local function getMaxDropdownHeight()
                     local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or 
                                      Vector2.new(800, 600)
-                    return math.min(220, math.floor(viewport.Y * 0.3))
+                    return math.min(isMobile() and 180 or 220, math.floor(viewport.Y * 0.3))
                 end
                 
                 local function closeOptions()
@@ -1945,7 +2029,7 @@ function Kour6anHub.CreateLib(title, themeName)
                         end
                     end
                     open = false
-                    wrap.Size = UDim2.new(1, 0, 0, 36)
+                    wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
                     
                     if Window._currentOpenDropdown == closeOptions then
                         Window._currentOpenDropdown = nil
@@ -1961,7 +2045,7 @@ function Kour6anHub.CreateLib(title, themeName)
                     optionsFrame.Name = "_dropdownOptions"
                     optionsFrame.BackgroundColor3 = theme.SectionBackground
                     optionsFrame.BorderSizePixel = 0
-                    optionsFrame.Position = UDim2.new(0, 0, 0, 38)
+                    optionsFrame.Position = UDim2.new(0, 0, 0, ResponsiveSize.buttonHeight + 2)
                     optionsFrame.Size = UDim2.new(1, 0, 0, 0)
                     optionsFrame.Visible = false
                     optionsFrame.ClipsDescendants = true
@@ -1969,7 +2053,7 @@ function Kour6anHub.CreateLib(title, themeName)
                     optionsFrame.Parent = wrap
 
                     local corner = Instance.new("UICorner")
-                    corner.CornerRadius = UDim.new(0, 8)
+                    corner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
                     corner.Parent = optionsFrame
 
                     local border = Instance.new("UIStroke")
@@ -1985,7 +2069,7 @@ function Kour6anHub.CreateLib(title, themeName)
                     scrollFrame.Position = UDim2.new(0, 2, 0, 2)
                     scrollFrame.BackgroundTransparency = 1
                     scrollFrame.BorderSizePixel = 0
-                    scrollFrame.ScrollBarThickness = 4
+                    scrollFrame.ScrollBarThickness = isMobile() and 3 or 4
                     scrollFrame.ScrollBarImageColor3 = theme.Accent
                     scrollFrame.ScrollBarImageTransparency = 0.3
                     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -2012,7 +2096,7 @@ function Kour6anHub.CreateLib(title, themeName)
 
                     optionButtons = {}
 
-                    local itemHeight = 32
+                    local itemHeight = isMobile() and 28 or 32
                     local maxHeight = getMaxDropdownHeight()
                     local totalContentHeight = #options * itemHeight
                     local frameHeight = math.min(maxHeight, totalContentHeight)
@@ -2025,7 +2109,7 @@ function Kour6anHub.CreateLib(title, themeName)
                         optBtn.Position = UDim2.new(0, 4, 0, (i-1) * itemHeight + 2)
                         optBtn.BackgroundColor3 = theme.ButtonBackground
                         optBtn.Font = Enum.Font.Gotham
-                        optBtn.TextSize = 12
+                        optBtn.TextSize = ResponsiveSize.textSize
                         optBtn.TextColor3 = theme.Text
                         optBtn.AutoButtonColor = false
                         optBtn.Text = tostring(opt)
@@ -2036,7 +2120,7 @@ function Kour6anHub.CreateLib(title, themeName)
                         optBtn.Parent = scrollFrame
 
                         local optCorner = Instance.new("UICorner")
-                        optCorner.CornerRadius = UDim.new(0, 6)
+                        optCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius - 2)
                         optCorner.Parent = optBtn
 
                         local optPadding = Instance.new("UIPadding")
@@ -2120,7 +2204,7 @@ function Kour6anHub.CreateLib(title, themeName)
                         end)
                     end
 
-                    wrap.Size = UDim2.new(1, 0, 0, 36 + frameHeight + 8)
+                    wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight + frameHeight + 8)
                     Window._currentOpenDropdown = closeOptions
                 end
 
@@ -2149,7 +2233,8 @@ function Kour6anHub.CreateLib(title, themeName)
                 outsideClickConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed or not open then return end
                     
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+                       input.UserInputType == Enum.UserInputType.Touch then
                         local mouse = UserInputService:GetMouseLocation()
                         local wrapPos = wrap.AbsolutePosition
                         local wrapSize = wrap.AbsoluteSize
@@ -2228,1002 +2313,872 @@ function Kour6anHub.CreateLib(title, themeName)
             end
 
             function SectionObj:NewMultiDropdown(name, options, defaults, callback)
-                options = options or {}
-                if type(options) ~= "table" then 
-                    options = {} 
-                end
-                
-                local validOptions = {}
-                for i, opt in ipairs(options) do
-                    if opt ~= nil then
-                        validOptions[i] = tostring(opt)
-                    end
-                end
-                options = validOptions
-                
-                -- Initialize selected items
-                local selected = {}
-                if defaults and type(defaults) == "table" then
-                    for _, v in ipairs(defaults) do
-                        selected[tostring(v)] = true
-                    end
-                end
-                
-                local open = false
-                local optionsFrame = nil
-                local scrollFrame = nil
-                local optionButtons = {}
+    options = options or {}
+    if type(options) ~= "table" then options = {} end
+    
+    local validOptions = {}
+    for i, opt in ipairs(options) do
+        if opt ~= nil then
+            validOptions[i] = tostring(opt)
+        end
+    end
+    options = validOptions
+    
+    local selected = {}
+    if defaults and type(defaults) == "table" then
+        for _, v in ipairs(defaults) do
+            selected[tostring(v)] = true
+        end
+    end
+    
+    local open = false
+    local optionsFrame = nil
+    local scrollFrame = nil
+    local optionButtons = {}
 
-                local wrap = Instance.new("Frame")
-                wrap.Size = UDim2.new(1, 0, 0, 36)
-                wrap.BackgroundTransparency = 1
-                wrap.Parent = Section
+    local wrap = Instance.new("Frame")
+    wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
+    wrap.BackgroundTransparency = 1
+    wrap.Parent = Section
 
-                local function getDisplayText()
-                    local selectedList = {}
-                    for opt, isSelected in pairs(selected) do
-                        if isSelected then
-                            table.insert(selectedList, opt)
-                        end
-                    end
-                    
-                    if #selectedList == 0 then
-                        return "Select..."
-                    elseif #selectedList == 1 then
-                        return selectedList[1]
-                    elseif #selectedList <= 3 then
-                        return table.concat(selectedList, ", ")
-                    else
-                        return selectedList[1] .. ", " .. selectedList[2] .. " (+" .. (#selectedList - 2) .. " more)"
-                    end
-                end
-
-                local btn = Instance.new("TextButton")
-                btn.Text = (name and name .. ": " or "") .. getDisplayText()
-                btn.Size = UDim2.new(1, 0, 1, 0)
-                btn.BackgroundColor3 = theme.ButtonBackground
-                btn.TextColor3 = theme.Text
-                btn.Font = Enum.Font.Gotham
-                btn.TextSize = 13
-                btn.AutoButtonColor = false
-                btn.TextXAlignment = Enum.TextXAlignment.Left
-                btn.Parent = wrap
-
-                local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 8)
-                btnCorner.Parent = btn
-
-                local btnStroke = Instance.new("UIStroke")
-                btnStroke.Color = theme.ButtonBorder
-                btnStroke.Thickness = 1
-                btnStroke.Transparency = 0.7
-                btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                btnStroke.Parent = btn
-
-                local btnPadding = Instance.new("UIPadding")
-                btnPadding.PaddingLeft = UDim.new(0, 10)
-                btnPadding.PaddingRight = UDim.new(0, 32)
-                btnPadding.Parent = btn
-
-                local arrow = Instance.new("TextLabel")
-                arrow.Text = getArrowChar("down")
-                arrow.Size = UDim2.new(0, 20, 1, 0)
-                arrow.Position = UDim2.new(1, -24, 0, 0)
-                arrow.BackgroundTransparency = 1
-                arrow.TextColor3 = theme.SubText
-                arrow.Font = Enum.Font.Gotham
-                arrow.TextSize = 12
-                arrow.TextXAlignment = Enum.TextXAlignment.Center
-                arrow.Parent = btn
-
-                local function getMaxDropdownHeight()
-                    local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or 
-                                     Vector2.new(800, 600)
-                    return math.min(220, math.floor(viewport.Y * 0.3))
-                end
-                
-                local function closeOptions()
-                    if optionsFrame and optionsFrame.Parent and optionsFrame.Visible then
-                        arrow.Text = getArrowChar("down")
-                        tween(arrow, {Rotation = 0}, {duration = 0.15})
-                        
-                        local closeTween = tween(optionsFrame, {
-                            Size = UDim2.new(1, 0, 0, 0),
-                            BackgroundTransparency = 1
-                        }, {duration = 0.15})
-                        
-                        if scrollFrame then
-                            tween(scrollFrame, {ScrollBarImageTransparency = 1}, {duration = 0.1})
-                        end
-                        
-                        for _, optBtn in pairs(optionButtons) do
-                            if optBtn and optBtn.Parent then
-                                tween(optBtn, {
-                                    BackgroundTransparency = 1, 
-                                    TextTransparency = 1
-                                }, {duration = 0.1})
-                            end
-                        end
-                        
-                        if closeTween then
-                            local conn
-                            conn = closeTween.Completed:Connect(function()
-                                pcall(function() conn:Disconnect() end)
-                                if optionsFrame then optionsFrame.Visible = false end
-                            end)
-                        else
-                            task.wait(0.15)
-                            if optionsFrame then optionsFrame.Visible = false end
-                        end
-                    end
-                    open = false
-                    wrap.Size = UDim2.new(1, 0, 0, 36)
-                    
-                    if Window._currentOpenDropdown == closeOptions then
-                        Window._currentOpenDropdown = nil
-                    end
-                end
-
-                local function createOptionsFrame()
-                    if optionsFrame then
-                        pcall(function() optionsFrame:Destroy() end)
-                    end
-                    
-                    optionsFrame = Instance.new("Frame")
-                    optionsFrame.Name = "_dropdownOptions"
-                    optionsFrame.BackgroundColor3 = theme.SectionBackground
-                    optionsFrame.BorderSizePixel = 0
-                    optionsFrame.Position = UDim2.new(0, 0, 0, 38)
-                    optionsFrame.Size = UDim2.new(1, 0, 0, 0)
-                    optionsFrame.Visible = false
-                    optionsFrame.ClipsDescendants = true
-                    optionsFrame.ZIndex = 100
-                    optionsFrame.Parent = wrap
-
-                    local corner = Instance.new("UICorner")
-                    corner.CornerRadius = UDim.new(0, 8)
-                    corner.Parent = optionsFrame
-
-                    local border = Instance.new("UIStroke")
-                    border.Color = theme.ButtonBorder
-                    border.Thickness = 1
-                    border.Transparency = 0.7
-                    border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    border.Parent = optionsFrame
-
-                    scrollFrame = Instance.new("ScrollingFrame")
-                    scrollFrame.Name = "_optionsScroll"
-                    scrollFrame.Size = UDim2.new(1, -4, 1, -4)
-                    scrollFrame.Position = UDim2.new(0, 2, 0, 2)
-                    scrollFrame.BackgroundTransparency = 1
-                    scrollFrame.BorderSizePixel = 0
-                    scrollFrame.ScrollBarThickness = 4
-                    scrollFrame.ScrollBarImageColor3 = theme.Accent
-                    scrollFrame.ScrollBarImageTransparency = 0.3
-                    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-                    scrollFrame.ZIndex = 101
-                    scrollFrame.Parent = optionsFrame
-
-                    return optionsFrame, scrollFrame
-                end
-
-                local function openOptions()
-                    if #options == 0 then
-                        Window:Notify("Dropdown Error", "No options available", 2)
-                        return
-                    end
-
-                    if Window._currentOpenDropdown and Window._currentOpenDropdown ~= closeOptions then
-                        pcall(function() Window._currentOpenDropdown() end)
-                    end
-
-                    createOptionsFrame()
-                    open = true
-                    arrow.Text = getArrowChar("up")
-                    tween(arrow, {Rotation = 180}, {duration = 0.15})
-
-                    optionButtons = {}
-
-                    local itemHeight = 32
-                    local maxHeight = getMaxDropdownHeight()
-                    local totalContentHeight = #options * itemHeight
-                    local frameHeight = math.min(maxHeight, totalContentHeight)
-
-                    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalContentHeight)
-
-                    for i, opt in ipairs(options) do
-                        local optBtn = Instance.new("TextButton")
-                        optBtn.Size = UDim2.new(1, -8, 0, itemHeight - 4)
-                        optBtn.Position = UDim2.new(0, 4, 0, (i-1) * itemHeight + 2)
-                        optBtn.BackgroundColor3 = theme.ButtonBackground
-                        optBtn.Font = Enum.Font.Gotham
-                        optBtn.TextSize = 12
-                        optBtn.TextColor3 = theme.Text
-                        optBtn.AutoButtonColor = false
-                        optBtn.Text = tostring(opt)
-                        optBtn.TextXAlignment = Enum.TextXAlignment.Left
-                        optBtn.BackgroundTransparency = 1
-                        optBtn.TextTransparency = 1
-                        optBtn.ZIndex = 102
-                        optBtn.Parent = scrollFrame
-
-                        local optCorner = Instance.new("UICorner")
-                        optCorner.CornerRadius = UDim.new(0, 6)
-                        optCorner.Parent = optBtn
-
-                        local optPadding = Instance.new("UIPadding")
-                        optPadding.PaddingLeft = UDim.new(0, 10)
-                        optPadding.PaddingRight = UDim.new(0, 30)
-                        optPadding.Parent = optBtn
-
-                        -- Checkbox indicator - FIXED CHECKMARK
-                        local checkbox = Instance.new("TextLabel")
-                        checkbox.Size = UDim2.new(0, 18, 0, 18)
-                        checkbox.Position = UDim2.new(1, -22, 0.5, -9)
-                        checkbox.BackgroundColor3 = theme.InputBackground
-                        checkbox.TextColor3 = theme.Accent
-                        checkbox.Font = Enum.Font.GothamBold
-                        checkbox.TextSize = 14
-                        checkbox.Text = selected[tostring(opt)] and "✓" or ""  -- FIXED: Proper checkmark (U+2713)
-                        checkbox.ZIndex = 103
-                        checkbox.Parent = optBtn
-
-                        local checkCorner = Instance.new("UICorner")
-                        checkCorner.CornerRadius = UDim.new(0, 4)
-                        checkCorner.Parent = checkbox
-
-                        local checkStroke = Instance.new("UIStroke")
-                        checkStroke.Color = selected[tostring(opt)] and theme.Accent or theme.InputBorder
-                        checkStroke.Thickness = 1
-                        checkStroke.Transparency = 0.7
-                        checkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                        checkStroke.Parent = checkbox
-
-                        if selected[tostring(opt)] then
-                            optBtn.BackgroundColor3 = theme.ButtonHover
-                        end
-
-                        local hoverConn1 = optBtn.MouseEnter:Connect(function()
-                            tween(optBtn, {
-                                BackgroundColor3 = theme.ButtonHover
-                            }, {duration = 0.1})
-                        end)
-
-                        local hoverConn2 = optBtn.MouseLeave:Connect(function()
-                            if selected[tostring(opt)] then
-                                tween(optBtn, {
-                                    BackgroundColor3 = theme.ButtonHover
-                                }, {duration = 0.1})
-                            else
-                                tween(optBtn, {
-                                    BackgroundColor3 = theme.ButtonBackground
-                                }, {duration = 0.1})
-                            end
-                        end)
-
-                        local clickConn = optBtn.MouseButton1Click:Connect(function()
-                            -- Toggle selection
-                            selected[tostring(opt)] = not selected[tostring(opt)]
-                            
-                            if selected[tostring(opt)] then
-                                checkbox.Text = "✓"
-                                tween(checkbox, {BackgroundColor3 = theme.Accent}, {duration = 0.15})
-                                tween(checkStroke, {
-                                    Color = theme.Accent, 
-                                    Transparency = 0
-                                }, {duration = 0.15})
-                                tween(optBtn, {
-                                    BackgroundColor3 = theme.ButtonHover
-                                }, {duration = 0.15})
-                            else
-                                checkbox.Text = ""
-                                tween(checkbox, {BackgroundColor3 = theme.InputBackground}, {duration = 0.15})
-                                tween(checkStroke, {
-                                    Color = theme.InputBorder, 
-                                    Transparency = 0.7
-                                }, {duration = 0.15})
-                                tween(optBtn, {
-                                    BackgroundColor3 = theme.ButtonBackground
-                                }, {duration = 0.15})
-                            end
-                            
-                            -- Update button text
-                            btn.Text = (name and name .. ": " or "") .. getDisplayText()
-                            
-                            -- Call callback with selected items
-                            if callback and type(callback) == "function" then
-                                local selectedList = {}
-                                for o, isSelected in pairs(selected) do
-                                    if isSelected then
-                                        table.insert(selectedList, o)
-                                    end
-                                end
-                                safeCallback(callback, selectedList)
-                            end
-                        end)
-
-                        optionButtons[i] = optBtn
-                    end
-
-                    optionsFrame.Visible = true
-                    optionsFrame.BackgroundTransparency = 1
-                    scrollFrame.ScrollBarImageTransparency = 1
-
-                    tween(optionsFrame, {
-                        Size = UDim2.new(1, 0, 0, frameHeight + 4),
-                        BackgroundTransparency = 0
-                    }, {duration = 0.18})
-
-                    tween(scrollFrame, {ScrollBarImageTransparency = 0.3}, {duration = 0.18})
-
-                    for i, optBtn in pairs(optionButtons) do
-                        task.delay(i * 0.02, function()
-                            if optBtn and optBtn.Parent then
-                                tween(optBtn, {
-                                    BackgroundTransparency = 0,
-                                    TextTransparency = 0
-                                }, {duration = 0.12})
-                            end
-                        end)
-                    end
-
-                    wrap.Size = UDim2.new(1, 0, 0, 36 + frameHeight + 8)
-                    Window._currentOpenDropdown = closeOptions
-                end
-
-                btn.MouseButton1Click:Connect(function()
-                    if open then
-                        closeOptions()
-                    else
-                        openOptions()
-                    end
-                end)
-
-                debouncedHover(btn,
-                    function()
-                        if not open then
-                            tween(btnStroke, {Transparency = 0.5}, {duration = 0.1})
-                        end
-                    end,
-                    function()
-                        if not open then
-                            tween(btnStroke, {Transparency = 0.7}, {duration = 0.1})
-                        end
-                    end
-                )
-
-                local outsideClickConn
-                outsideClickConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-                    if gameProcessed or not open then return end
-                    
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        local mouse = UserInputService:GetMouseLocation()
-                        local wrapPos = wrap.AbsolutePosition
-                        local wrapSize = wrap.AbsoluteSize
-                        
-                        if mouse.X < wrapPos.X or mouse.X > wrapPos.X + wrapSize.X or
-                           mouse.Y < wrapPos.Y or mouse.Y > wrapPos.Y + wrapSize.Y then
-                            closeOptions()
-                        end
-                    end
-                end)
-
-                globalConnTracker:add(outsideClickConn)
-
-                local ancestryConn
-                ancestryConn = wrap.AncestryChanged:Connect(function()
-                    if not wrap.Parent then
-                        pcall(function() 
-                            outsideClickConn:Disconnect()
-                            ancestryConn:Disconnect()
-                        end)
-                    end
-                end)
-                globalConnTracker:add(ancestryConn)
-
-                return {
-                    Set = function(_, values)
-                        if type(values) ~= "table" then
-                            values = {values}
-                        end
-                        
-                        selected = {}
-                        for _, v in ipairs(values) do
-                            selected[tostring(v)] = true
-                        end
-                        
-                        btn.Text = (name and name .. ": " or "") .. getDisplayText()
-                        
-                        if callback and type(callback) == "function" then
-                            local selectedList = {}
-                            for o, isSelected in pairs(selected) do
-                                if isSelected then
-                                    table.insert(selectedList, o)
-                                end
-                            end
-                            safeCallback(callback, selectedList)
-                        end
-                    end,
-                    Get = function()
-                        local selectedList = {}
-                        for opt, isSelected in pairs(selected) do
-                            if isSelected then
-                                table.insert(selectedList, opt)
-                            end
-                        end
-                        return selectedList
-                    end,
-                    SetOptions = function(_, newOptions)
-                        newOptions = newOptions or {}
-                        if type(newOptions) ~= "table" then
-                            newOptions = {}
-                        end
-                        
-                        local validNewOptions = {}
-                        for i, opt in ipairs(newOptions) do
-                            if opt ~= nil then
-                                validNewOptions[i] = tostring(opt)
-                            end
-                        end
-                        options = validNewOptions
-                        selected = {}
-                        btn.Text = (name and name .. ": " or "") .. getDisplayText()
-                        closeOptions()
-                    end,
-                    Clear = function()
-                        selected = {}
-                        btn.Text = (name and name .. ": " or "") .. getDisplayText()
-                        if callback and type(callback) == "function" then
-                            safeCallback(callback, {})
-                        end
-                    end,
-                    Close = closeOptions
-                }
+    local function getDisplayText()
+        local selectedList = {}
+        for opt, isSelected in pairs(selected) do
+            if isSelected then
+                table.insert(selectedList, opt)
             end
+        end
+        
+        if #selectedList == 0 then
+            return "Select..."
+        elseif #selectedList == 1 then
+            return selectedList[1]
+        elseif #selectedList <= 3 then
+            return table.concat(selectedList, ", ")
+        else
+            return selectedList[1] .. ", " .. selectedList[2] .. " (+" .. (#selectedList - 2) .. " more)"
+        end
+    end
+
+    local btn = Instance.new("TextButton")
+    btn.Text = (name and name .. ": " or "") .. getDisplayText()
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundColor3 = theme.ButtonBackground
+    btn.TextColor3 = theme.Text
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = ResponsiveSize.textSize
+    btn.AutoButtonColor = false
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = wrap
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+    btnCorner.Parent = btn
+
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Color = theme.ButtonBorder
+    btnStroke.Thickness = 1
+    btnStroke.Transparency = 0.7
+    btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    btnStroke.Parent = btn
+
+    local btnPadding = Instance.new("UIPadding")
+    btnPadding.PaddingLeft = UDim.new(0, 10)
+    btnPadding.PaddingRight = UDim.new(0, 32)
+    btnPadding.Parent = btn
+
+    local arrow = Instance.new("TextLabel")
+    arrow.Text = getArrowChar("down")
+    arrow.Size = UDim2.new(0, 20, 1, 0)
+    arrow.Position = UDim2.new(1, -24, 0, 0)
+    arrow.BackgroundTransparency = 1
+    arrow.TextColor3 = theme.SubText
+    arrow.Font = Enum.Font.Gotham
+    arrow.TextSize = isMobile() and 10 or 12
+    arrow.TextXAlignment = Enum.TextXAlignment.Center
+    arrow.Parent = btn
+
+    local function getMaxDropdownHeight()
+        local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600)
+        return math.min(isMobile() and 180 or 220, math.floor(viewport.Y * 0.3))
+    end
+    
+    local function closeOptions()
+        if optionsFrame and optionsFrame.Parent and optionsFrame.Visible then
+            arrow.Text = getArrowChar("down")
+            tween(arrow, {Rotation = 0}, {duration = 0.15})
+            
+            tween(optionsFrame, {
+                Size = UDim2.new(1, 0, 0, 0),
+                BackgroundTransparency = 1
+            }, {duration = 0.15})
+            
+            if scrollFrame then
+                tween(scrollFrame, {ScrollBarImageTransparency = 1}, {duration = 0.1})
+            end
+            
+            for _, optBtn in pairs(optionButtons) do
+                if optBtn and optBtn.Parent then
+                    tween(optBtn, {BackgroundTransparency = 1, TextTransparency = 1}, {duration = 0.1})
+                end
+            end
+            
+            task.wait(0.15)
+            if optionsFrame then optionsFrame.Visible = false end
+        end
+        open = false
+        wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
+        
+        if Window._currentOpenDropdown == closeOptions then
+            Window._currentOpenDropdown = nil
+        end
+    end
+
+    local function createOptionsFrame()
+        if optionsFrame then
+            pcall(function() optionsFrame:Destroy() end)
+        end
+        
+        optionsFrame = Instance.new("Frame")
+        optionsFrame.Name = "_dropdownOptions"
+        optionsFrame.BackgroundColor3 = theme.SectionBackground
+        optionsFrame.BorderSizePixel = 0
+        optionsFrame.Position = UDim2.new(0, 0, 0, ResponsiveSize.buttonHeight + 2)
+        optionsFrame.Size = UDim2.new(1, 0, 0, 0)
+        optionsFrame.Visible = false
+        optionsFrame.ClipsDescendants = true
+        optionsFrame.ZIndex = 100
+        optionsFrame.Parent = wrap
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+        corner.Parent = optionsFrame
+
+        local border = Instance.new("UIStroke")
+        border.Color = theme.ButtonBorder
+        border.Thickness = 1
+        border.Transparency = 0.7
+        border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        border.Parent = optionsFrame
+
+        scrollFrame = Instance.new("ScrollingFrame")
+        scrollFrame.Size = UDim2.new(1, -4, 1, -4)
+        scrollFrame.Position = UDim2.new(0, 2, 0, 2)
+        scrollFrame.BackgroundTransparency = 1
+        scrollFrame.BorderSizePixel = 0
+        scrollFrame.ScrollBarThickness = isMobile() and 3 or 4
+        scrollFrame.ScrollBarImageColor3 = theme.Accent
+        scrollFrame.ScrollBarImageTransparency = 0.3
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        scrollFrame.ZIndex = 101
+        scrollFrame.Parent = optionsFrame
+
+        return optionsFrame, scrollFrame
+    end
+
+    local function openOptions()
+        if #options == 0 then
+            Window:Notify("Dropdown Error", "No options available", 2)
+            return
+        end
+
+        if Window._currentOpenDropdown and Window._currentOpenDropdown ~= closeOptions then
+            pcall(function() Window._currentOpenDropdown() end)
+        end
+
+        createOptionsFrame()
+        open = true
+        arrow.Text = getArrowChar("up")
+        tween(arrow, {Rotation = 180}, {duration = 0.15})
+
+        optionButtons = {}
+        local itemHeight = isMobile() and 28 or 32
+        local maxHeight = getMaxDropdownHeight()
+        local totalContentHeight = #options * itemHeight
+        local frameHeight = math.min(maxHeight, totalContentHeight)
+
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalContentHeight)
+
+        for i, opt in ipairs(options) do
+            local optBtn = Instance.new("TextButton")
+            optBtn.Size = UDim2.new(1, -8, 0, itemHeight - 4)
+            optBtn.Position = UDim2.new(0, 4, 0, (i-1) * itemHeight + 2)
+            optBtn.BackgroundColor3 = theme.ButtonBackground
+            optBtn.Font = Enum.Font.Gotham
+            optBtn.TextSize = ResponsiveSize.textSize
+            optBtn.TextColor3 = theme.Text
+            optBtn.AutoButtonColor = false
+            optBtn.Text = tostring(opt)
+            optBtn.TextXAlignment = Enum.TextXAlignment.Left
+            optBtn.BackgroundTransparency = 1
+            optBtn.TextTransparency = 1
+            optBtn.ZIndex = 102
+            optBtn.Parent = scrollFrame
+
+            local optCorner = Instance.new("UICorner")
+            optCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius - 2)
+            optCorner.Parent = optBtn
+
+            local optPadding = Instance.new("UIPadding")
+            optPadding.PaddingLeft = UDim.new(0, 10)
+            optPadding.PaddingRight = UDim.new(0, 30)
+            optPadding.Parent = optBtn
+
+            local checkboxSize = isMobile() and 16 or 18
+            local checkbox = Instance.new("TextLabel")
+            checkbox.Size = UDim2.new(0, checkboxSize, 0, checkboxSize)
+            checkbox.Position = UDim2.new(1, -(checkboxSize + 6), 0.5, -checkboxSize/2)
+            checkbox.BackgroundColor3 = theme.InputBackground
+            checkbox.TextColor3 = theme.Accent
+            checkbox.Font = Enum.Font.GothamBold
+            checkbox.TextSize = isMobile() and 12 or 14
+            checkbox.Text = selected[tostring(opt)] and "✓" or ""
+            checkbox.ZIndex = 103
+            checkbox.Parent = optBtn
+
+            local checkCorner = Instance.new("UICorner")
+            checkCorner.CornerRadius = UDim.new(0, 4)
+            checkCorner.Parent = checkbox
+
+            local checkStroke = Instance.new("UIStroke")
+            checkStroke.Color = selected[tostring(opt)] and theme.Accent or theme.InputBorder
+            checkStroke.Thickness = 1
+            checkStroke.Transparency = 0.7
+            checkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            checkStroke.Parent = checkbox
+
+            if selected[tostring(opt)] then
+                optBtn.BackgroundColor3 = theme.ButtonHover
+            end
+
+            optBtn.MouseEnter:Connect(function()
+                tween(optBtn, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.1})
+            end)
+
+            optBtn.MouseLeave:Connect(function()
+                if selected[tostring(opt)] then
+                    tween(optBtn, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.1})
+                else
+                    tween(optBtn, {BackgroundColor3 = theme.ButtonBackground}, {duration = 0.1})
+                end
+            end)
+
+            optBtn.MouseButton1Click:Connect(function()
+                selected[tostring(opt)] = not selected[tostring(opt)]
+                
+                if selected[tostring(opt)] then
+                    checkbox.Text = "✓"
+                    tween(checkbox, {BackgroundColor3 = theme.Accent}, {duration = 0.15})
+                    tween(checkStroke, {Color = theme.Accent, Transparency = 0}, {duration = 0.15})
+                    tween(optBtn, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.15})
+                else
+                    checkbox.Text = ""
+                    tween(checkbox, {BackgroundColor3 = theme.InputBackground}, {duration = 0.15})
+                    tween(checkStroke, {Color = theme.InputBorder, Transparency = 0.7}, {duration = 0.15})
+                    tween(optBtn, {BackgroundColor3 = theme.ButtonBackground}, {duration = 0.15})
+                end
+                
+                btn.Text = (name and name .. ": " or "") .. getDisplayText()
+                
+                if callback and type(callback) == "function" then
+                    local selectedList = {}
+                    for o, isSelected in pairs(selected) do
+                        if isSelected then
+                            table.insert(selectedList, o)
+                        end
+                    end
+                    safeCallback(callback, selectedList)
+                end
+            end)
+
+            optionButtons[i] = optBtn
+        end
+
+        optionsFrame.Visible = true
+        optionsFrame.BackgroundTransparency = 1
+        scrollFrame.ScrollBarImageTransparency = 1
+
+        tween(optionsFrame, {
+            Size = UDim2.new(1, 0, 0, frameHeight + 4),
+            BackgroundTransparency = 0
+        }, {duration = 0.18})
+
+        tween(scrollFrame, {ScrollBarImageTransparency = 0.3}, {duration = 0.18})
+
+        for i, optBtn in pairs(optionButtons) do
+            task.delay(i * 0.02, function()
+                if optBtn and optBtn.Parent then
+                    tween(optBtn, {BackgroundTransparency = 0, TextTransparency = 0}, {duration = 0.12})
+                end
+            end)
+        end
+
+        wrap.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight + frameHeight + 8)
+        Window._currentOpenDropdown = closeOptions
+    end
+
+    btn.MouseButton1Click:Connect(function()
+        if open then closeOptions() else openOptions() end
+    end)
+
+    debouncedHover(btn,
+        function()
+            if not open then
+                tween(btnStroke, {Transparency = 0.5}, {duration = 0.1})
+            end
+        end,
+        function()
+            if not open then
+                tween(btnStroke, {Transparency = 0.7}, {duration = 0.1})
+            end
+        end
+    )
+
+    local outsideClickConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed or not open then return end
+        
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or
+           input.UserInputType == Enum.UserInputType.Touch then
+            local mouse = UserInputService:GetMouseLocation()
+            local wrapPos = wrap.AbsolutePosition
+            local wrapSize = wrap.AbsoluteSize
+            
+            if mouse.X < wrapPos.X or mouse.X > wrapPos.X + wrapSize.X or
+               mouse.Y < wrapPos.Y or mouse.Y > wrapPos.Y + wrapSize.Y then
+                closeOptions()
+            end
+        end
+    end)
+
+    globalConnTracker:add(outsideClickConn)
+
+    return {
+        Set = function(_, values)
+            if type(values) ~= "table" then values = {values} end
+            selected = {}
+            for _, v in ipairs(values) do
+                selected[tostring(v)] = true
+            end
+            btn.Text = (name and name .. ": " or "") .. getDisplayText()
+            if callback and type(callback) == "function" then
+                local selectedList = {}
+                for o, isSelected in pairs(selected) do
+                    if isSelected then table.insert(selectedList, o) end
+                end
+                safeCallback(callback, selectedList)
+            end
+        end,
+        Get = function()
+            local selectedList = {}
+            for opt, isSelected in pairs(selected) do
+                if isSelected then table.insert(selectedList, opt) end
+            end
+            return selectedList
+        end,
+        SetOptions = function(_, newOptions)
+            options = newOptions or {}
+            selected = {}
+            btn.Text = (name and name .. ": " or "") .. getDisplayText()
+            closeOptions()
+        end,
+        Clear = function()
+            selected = {}
+            btn.Text = (name and name .. ": " or "") .. getDisplayText()
+            if callback then safeCallback(callback, {}) end
+        end,
+        Close = closeOptions
+    }
+end
 
             function SectionObj:NewColorpicker(name, defaultColor, callback)
-                local currentColor = typeof(defaultColor) == "Color3" and defaultColor or 
-                                     Color3.fromRGB(255, 255, 255)
-                local currentH, currentS, currentV = Color3.toHSV(currentColor)
-                local connections = {}
-                
-                local container = Instance.new("Frame")
-                container.Size = UDim2.new(1, 0, 0, 36)
-                container.BackgroundTransparency = 1
-                container.Parent = Section
-
-                local button = Instance.new("TextButton")
-                button.Size = UDim2.new(1, 0, 1, 0)
-                button.BackgroundColor3 = theme.ButtonBackground
-                button.AutoButtonColor = false
-                button.Font = Enum.Font.Gotham
-                button.TextSize = 13
-                button.TextColor3 = theme.Text
-                button.Text = (name and name .. " " or "") .. "Color Picker"
-                button.TextXAlignment = Enum.TextXAlignment.Left
-                button.Parent = container
-
-                local buttonCorner = Instance.new("UICorner")
-                buttonCorner.CornerRadius = UDim.new(0, 8)
-                buttonCorner.Parent = button
-
-                local buttonStroke = Instance.new("UIStroke")
-                buttonStroke.Color = theme.ButtonBorder
-                buttonStroke.Thickness = 1
-                buttonStroke.Transparency = 0.7
-                buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                buttonStroke.Parent = button
-
-                local buttonPadding = Instance.new("UIPadding")
-                buttonPadding.PaddingLeft = UDim.new(0, 10)
-                buttonPadding.PaddingRight = UDim.new(0, 40)
-                buttonPadding.Parent = button
-
-                local preview = Instance.new("Frame")
-                preview.Size = UDim2.new(0, 26, 0, 26)
-                preview.Position = UDim2.new(1, -32, 0.5, -13)
-                preview.BackgroundColor3 = currentColor
-                preview.BorderSizePixel = 0
-                preview.Parent = container
-
-                local previewCorner = Instance.new("UICorner")
-                previewCorner.CornerRadius = UDim.new(0, 8)
-                previewCorner.Parent = preview
-
-                local previewStroke = Instance.new("UIStroke")
-                previewStroke.Color = theme.ButtonBorder
-                previewStroke.Thickness = 1
-                previewStroke.Transparency = 0.5
-                previewStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                previewStroke.Parent = preview
-
-                local function createColorDialog()
-                    local guiParent = game:GetService("CoreGui")
-                    local success, playerGui = pcall(function()
-                        local plr = game:GetService("Players").LocalPlayer
-                        if plr and plr:FindFirstChild("PlayerGui") then
-                            return plr.PlayerGui
-                        end
-                    end)
-                    if success and playerGui then 
-                        guiParent = playerGui 
-                    end
-                    
-                    local colorPickerGui = Instance.new("ScreenGui")
-                    colorPickerGui.Name = "ColorPickerOverlay"
-                    colorPickerGui.DisplayOrder = 1000000000
-                    colorPickerGui.ResetOnSpawn = false
-                    colorPickerGui.IgnoreGuiInset = true
-                    colorPickerGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-                    colorPickerGui.Parent = guiParent
-
-                    local dialogOverlay = Instance.new("Frame")
-                    dialogOverlay.Name = "ColorPickerDialog"
-                    dialogOverlay.Size = UDim2.new(1, 0, 1, 0)
-                    dialogOverlay.Position = UDim2.new(0, 0, 0, 0)
-                    dialogOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                    dialogOverlay.BackgroundTransparency = 0.5
-                    dialogOverlay.ZIndex = 1
-                    dialogOverlay.Active = true
-                    dialogOverlay.Parent = colorPickerGui
-
-                    local dialog = Instance.new("Frame")
-                    dialog.Size = UDim2.new(0, 440, 0, 340)
-                    dialog.Position = UDim2.new(0.5, -220, 0.5, -170)
-                    dialog.BackgroundColor3 = theme.SectionBackground
-                    dialog.ZIndex = 2
-                    dialog.Active = true
-                    dialog.Parent = dialogOverlay
-
-                    local dialogCorner = Instance.new("UICorner")
-                    dialogCorner.CornerRadius = UDim.new(0, 12)
-                    dialogCorner.Parent = dialog
-
-                    local dialogStroke = Instance.new("UIStroke")
-                    dialogStroke.Color = theme.ButtonBorder
-                    dialogStroke.Thickness = 1
-                    dialogStroke.Transparency = 0.7
-                    dialogStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    dialogStroke.Parent = dialog
-
-                    addShadow(dialog, 0.6)
-
-                    local title = Instance.new("TextLabel")
-                    title.Text = name or "Color Picker"
-                    title.Size = UDim2.new(1, -20, 0, 35)
-                    title.Position = UDim2.new(0, 10, 0, 10)
-                    title.BackgroundTransparency = 1
-                    title.TextColor3 = theme.Text
-                    title.Font = Enum.Font.GothamBold
-                    title.TextSize = 16
-                    title.TextXAlignment = Enum.TextXAlignment.Left
-                    title.ZIndex = 3
-                    title.Parent = dialog
-
-                    local workingH, workingS, workingV = currentH, currentS, currentV
-
-                    local satVibMap = Instance.new("ImageLabel")
-                    satVibMap.Size = UDim2.new(0, 190, 0, 170)
-                    satVibMap.Position = UDim2.new(0, 20, 0, 60)
-                    satVibMap.Image = "rbxassetid://4155801252"
-                    satVibMap.BackgroundColor3 = Color3.fromHSV(workingH, 1, 1)
-                    satVibMap.ZIndex = 3
-                    satVibMap.Active = true
-                    satVibMap.Parent = dialog
-
-                    local mapCorner = Instance.new("UICorner")
-                    mapCorner.CornerRadius = UDim.new(0, 8)
-                    mapCorner.Parent = satVibMap
-
-                    local mapStroke = Instance.new("UIStroke")
-                    mapStroke.Color = theme.ButtonBorder
-                    mapStroke.Thickness = 1
-                    mapStroke.Transparency = 0.7
-                    mapStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    mapStroke.Parent = satVibMap
-
-                    local satVibCursor = Instance.new("ImageLabel")
-                    satVibCursor.Size = UDim2.new(0, 20, 0, 20)
-                    satVibCursor.Position = UDim2.new(workingS, -10, 1 - workingV, -10)
-                    satVibCursor.Image = "rbxassetid://4805639000"
-                    satVibCursor.BackgroundTransparency = 1
-                    satVibCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-                    satVibCursor.ZIndex = 4
-                    satVibCursor.Parent = satVibMap
-
-                    local hueSlider = Instance.new("Frame")
-                    hueSlider.Size = UDim2.new(0, 14, 0, 200)
-                    hueSlider.Position = UDim2.new(0, 220, 0, 60)
-                    hueSlider.ZIndex = 3
-                    hueSlider.Active = true
-                    hueSlider.Parent = dialog
-
-                    local hueCorner = Instance.new("UICorner")
-                    hueCorner.CornerRadius = UDim.new(1, 0)
-                    hueCorner.Parent = hueSlider
-
-                    local hueStroke = Instance.new("UIStroke")
-                    hueStroke.Color = theme.ButtonBorder
-                    hueStroke.Thickness = 1
-                    hueStroke.Transparency = 0.7
-                    hueStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    hueStroke.Parent = hueSlider
-
-                    local hueGradient = Instance.new("UIGradient")
-                    hueGradient.Rotation = 90
-                    local sequenceTable = {}
-                    for i = 0, 1, 0.1 do
-                        table.insert(sequenceTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
-                    end
-                    hueGradient.Color = ColorSequence.new(sequenceTable)
-                    hueGradient.Parent = hueSlider
-
-                    local hueCursor = Instance.new("ImageLabel")
-                    hueCursor.Size = UDim2.new(0, 16, 0, 16)
-                    hueCursor.Position = UDim2.new(0, -1, workingH, -8)
-                    hueCursor.Image = "rbxassetid://12266946128"
-                    hueCursor.ImageColor3 = theme.InputBackground
-                    hueCursor.BackgroundTransparency = 1
-                    hueCursor.ZIndex = 4
-                    hueCursor.Parent = hueSlider
-
-                    local oldColorDisplay = Instance.new("ImageLabel")
-                    oldColorDisplay.Size = UDim2.new(0, 94, 0, 28)
-                    oldColorDisplay.Position = UDim2.new(0, 120, 0, 240)
-                    oldColorDisplay.Image = GRADIENT_IMAGE
-                    oldColorDisplay.ImageTransparency = 0.45
-                    oldColorDisplay.ScaleType = Enum.ScaleType.Tile
-                    oldColorDisplay.TileSize = UDim2.new(0, 40, 0, 40)
-                    oldColorDisplay.ZIndex = 3
-                    oldColorDisplay.Parent = dialog
-
-                    local oldColorFrame = Instance.new("Frame")
-                    oldColorFrame.Size = UDim2.new(1, 0, 1, 0)
-                    oldColorFrame.BackgroundColor3 = currentColor
-                    oldColorFrame.ZIndex = 4
-                    oldColorFrame.Parent = oldColorDisplay
-
-                    local oldCorner = Instance.new("UICorner")
-                    oldCorner.CornerRadius = UDim.new(0, 6)
-                    oldCorner.Parent = oldColorDisplay
-
-                    local oldFrameCorner = Instance.new("UICorner")
-                    oldFrameCorner.CornerRadius = UDim.new(0, 6)
-                    oldFrameCorner.Parent = oldColorFrame
-
-                    local oldStroke = Instance.new("UIStroke")
-                    oldStroke.Color = theme.ButtonBorder
-                    oldStroke.Thickness = 1
-                    oldStroke.Transparency = 0.7
-                    oldStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    oldStroke.Parent = oldColorDisplay
-
-                    local newColorDisplay = Instance.new("ImageLabel")
-                    newColorDisplay.Size = UDim2.new(0, 94, 0, 28)
-                    newColorDisplay.Position = UDim2.new(0, 20, 0, 240)
-                    newColorDisplay.Image = GRADIENT_IMAGE
-                    newColorDisplay.ImageTransparency = 0.45
-                    newColorDisplay.ScaleType = Enum.ScaleType.Tile
-                    newColorDisplay.TileSize = UDim2.new(0, 40, 0, 40)
-                    newColorDisplay.ZIndex = 3
-                    newColorDisplay.Parent = dialog
-
-                    local newColorFrame = Instance.new("Frame")
-                    newColorFrame.Size = UDim2.new(1, 0, 1, 0)
-                    newColorFrame.BackgroundColor3 = Color3.fromHSV(workingH, workingS, workingV)
-                    newColorFrame.ZIndex = 4
-                    newColorFrame.Parent = newColorDisplay
-
-                    local newCorner = Instance.new("UICorner")
-                    newCorner.CornerRadius = UDim.new(0, 6)
-                    newCorner.Parent = newColorDisplay
-
-                    local newFrameCorner = Instance.new("UICorner")
-                    newFrameCorner.CornerRadius = UDim.new(0, 6)
-                    newFrameCorner.Parent = newColorFrame
-
-                    local newStroke = Instance.new("UIStroke")
-                    newStroke.Color = theme.ButtonBorder
-                    newStroke.Thickness = 1
-                    newStroke.Transparency = 0.7
-                    newStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    newStroke.Parent = newColorDisplay
-
-                    local function createInput(pos, labelText, defaultValue)
-                        local inputFrame = Instance.new("Frame")
-                        inputFrame.Size = UDim2.new(0, 95, 0, 34)
-                        inputFrame.Position = pos
-                        inputFrame.BackgroundColor3 = theme.InputBackground
-                        inputFrame.ZIndex = 3
-                        inputFrame.Parent = dialog
-
-                        local inputCorner = Instance.new("UICorner")
-                        inputCorner.CornerRadius = UDim.new(0, 6)
-                        inputCorner.Parent = inputFrame
-
-                        local inputStroke = Instance.new("UIStroke")
-                        inputStroke.Color = theme.InputBorder
-                        inputStroke.Thickness = 1
-                        inputStroke.Transparency = 0.7
-                        inputStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                        inputStroke.Parent = inputFrame
-
-                        local input = Instance.new("TextBox")
-                        input.Size = UDim2.new(1, -14, 1, 0)
-                        input.Position = UDim2.new(0, 7, 0, 0)
-                        input.BackgroundTransparency = 1
-                        input.TextColor3 = theme.Text
-                        input.Font = Enum.Font.Gotham
-                        input.TextSize = 12
-                        input.Text = defaultValue
-                        input.ClearTextOnFocus = false
-                        input.ZIndex = 4
-                        input.Parent = inputFrame
-
-                        local label = Instance.new("TextLabel")
-                        label.Text = labelText
-                        label.Size = UDim2.new(0, 35, 0, 34)
-                        label.Position = UDim2.new(1, 5, 0, 0)
-                        label.BackgroundTransparency = 1
-                        label.TextColor3 = theme.SubText
-                        label.Font = Enum.Font.Gotham
-                        label.TextSize = 13
-                        label.TextXAlignment = Enum.TextXAlignment.Left
-                        label.ZIndex = 3
-                        label.Parent = inputFrame
-
-                        input.Focused:Connect(function()
-                            tween(inputStroke, {
-                                Color = theme.Accent,
-                                Transparency = 0
-                            }, {duration = 0.15})
-                        end)
-
-                        input.FocusLost:Connect(function()
-                            tween(inputStroke, {
-                                Color = theme.InputBorder,
-                                Transparency = 0.7
-                            }, {duration = 0.15})
-                        end)
-
-                        return input
-                    end
-
-                    local hexInput = createInput(UDim2.new(0, 250, 0, 60), "Hex", 
-                                                  "#" .. Color3.fromHSV(workingH, workingS, workingV):ToHex())
-                    local redInput = createInput(UDim2.new(0, 250, 0, 100), "Red", 
-                                                  tostring(math.floor(Color3.fromHSV(workingH, workingS, workingV).r * 255)))
-                    local greenInput = createInput(UDim2.new(0, 250, 0, 140), "Green", 
-                                                    tostring(math.floor(Color3.fromHSV(workingH, workingS, workingV).g * 255)))
-                    local blueInput = createInput(UDim2.new(0, 250, 0, 180), "Blue", 
-                                                   tostring(math.floor(Color3.fromHSV(workingH, workingS, workingV).b * 255)))
-
-                    local function updateDisplay()
-                        local newColor = Color3.fromHSV(workingH, workingS, workingV)
-                        
-                        satVibMap.BackgroundColor3 = Color3.fromHSV(workingH, 1, 1)
-                        satVibCursor.Position = UDim2.new(workingS, -10, 1 - workingV, -10)
-                        hueCursor.Position = UDim2.new(0, -1, workingH, -8)
-                        newColorFrame.BackgroundColor3 = newColor
-                        
-                        hexInput.Text = "#" .. newColor:ToHex()
-                        redInput.Text = tostring(math.floor(newColor.r * 255))
-                        greenInput.Text = tostring(math.floor(newColor.g * 255))
-                        blueInput.Text = tostring(math.floor(newColor.b * 255))
-                    end
-
-                    local satVibDragging = false
-                    local hueDragging = false
-
-                    local satVibConn = satVibMap.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            satVibDragging = true
-                        end
-                    end)
-
-                    local satVibMoveConn = UserInputService.InputChanged:Connect(function(input)
-                        if satVibDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                            local mouse = UserInputService:GetMouseLocation()
-                            local mapPos = satVibMap.AbsolutePosition
-                            local mapSize = satVibMap.AbsoluteSize
-                            
-                            local relX = math.clamp((mouse.X - mapPos.X) / mapSize.X, 0, 1)
-                            local relY = math.clamp((mouse.Y - mapPos.Y) / mapSize.Y, 0, 1)
-                            
-                            workingS = relX
-                            workingV = 1 - relY
-                            updateDisplay()
-                        end
-                    end)
-
-                    local satVibEndConn = UserInputService.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            satVibDragging = false
-                        end
-                    end)
-
-                    local hueConn = hueSlider.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            hueDragging = true
-                        end
-                    end)
-
-                    local hueMoveConn = UserInputService.InputChanged:Connect(function(input)
-                        if hueDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                            local mouse = UserInputService:GetMouseLocation()
-                            local sliderPos = hueSlider.AbsolutePosition
-                            local sliderSize = hueSlider.AbsoluteSize
-                            
-                            local relY = math.clamp((mouse.Y - sliderPos.Y) / sliderSize.Y, 0, 1)
-                            workingH = relY
-                            updateDisplay()
-                        end
-                    end)
-
-                    local hueEndConn = UserInputService.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            hueDragging = false
-                        end
-                    end)
-
-                    local buttonContainer = Instance.new("Frame")
-                    buttonContainer.Size = UDim2.new(0, 210, 0, 36)
-                    buttonContainer.Position = UDim2.new(0, 20, 0, 290)
-                    buttonContainer.BackgroundTransparency = 1
-                    buttonContainer.ZIndex = 3
-                    buttonContainer.Parent = dialog
-
-                    local buttonLayout = Instance.new("UIListLayout")
-                    buttonLayout.FillDirection = Enum.FillDirection.Horizontal
-                    buttonLayout.Padding = UDim.new(0, 10)
-                    buttonLayout.Parent = buttonContainer
-
-                    local cancelBtn = Instance.new("TextButton")
-                    cancelBtn.Size = UDim2.new(0, 100, 1, 0)
-                    cancelBtn.BackgroundColor3 = theme.ButtonBackground
-                    cancelBtn.TextColor3 = theme.Text
-                    cancelBtn.Font = Enum.Font.Gotham
-                    cancelBtn.TextSize = 14
-                    cancelBtn.Text = "Cancel"
-                    cancelBtn.AutoButtonColor = false
-                    cancelBtn.ZIndex = 4
-                    cancelBtn.Parent = buttonContainer
-
-                    local cancelCorner = Instance.new("UICorner")
-                    cancelCorner.CornerRadius = UDim.new(0, 8)
-                    cancelCorner.Parent = cancelBtn
-
-                    local cancelStroke = Instance.new("UIStroke")
-                    cancelStroke.Color = theme.ButtonBorder
-                    cancelStroke.Thickness = 1
-                    cancelStroke.Transparency = 0.7
-                    cancelStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    cancelStroke.Parent = cancelBtn
-
-                    local doneBtn = Instance.new("TextButton")
-                    doneBtn.Size = UDim2.new(0, 100, 1, 0)
-                    doneBtn.BackgroundColor3 = theme.Accent
-                    doneBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    doneBtn.Font = Enum.Font.Gotham
-                    doneBtn.TextSize = 14
-                    doneBtn.Text = "Done"
-                    doneBtn.AutoButtonColor = false
-                    doneBtn.ZIndex = 4
-                    doneBtn.Parent = buttonContainer
-
-                    local doneCorner = Instance.new("UICorner")
-                    doneCorner.CornerRadius = UDim.new(0, 8)
-                    doneCorner.Parent = doneBtn
-
-                    local doneStroke = Instance.new("UIStroke")
-                    doneStroke.Color = theme.Accent
-                    doneStroke.Thickness = 1
-                    doneStroke.Transparency = 0
-                    doneStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    doneStroke.Parent = doneBtn
-
-                    debouncedHover(cancelBtn,
-                        function()
-                            tween(cancelBtn, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.1})
-                            tween(cancelStroke, {Transparency = 0.5}, {duration = 0.1})
-                        end,
-                        function()
-                            tween(cancelBtn, {BackgroundColor3 = theme.ButtonBackground}, {duration = 0.1})
-                            tween(cancelStroke, {Transparency = 0.7}, {duration = 0.1})
-                        end
-                    )
-
-                    debouncedHover(doneBtn,
-                        function()
-                            tween(doneBtn, {BackgroundColor3 = theme.AccentHover}, {duration = 0.1})
-                        end,
-                        function()
-                            tween(doneBtn, {BackgroundColor3 = theme.Accent}, {duration = 0.1})
-                        end
-                    )
-
-                    local function closeDialog()
-                        pcall(function() satVibConn:Disconnect() end)
-                        pcall(function() satVibMoveConn:Disconnect() end)
-                        pcall(function() satVibEndConn:Disconnect() end)
-                        pcall(function() hueConn:Disconnect() end)
-                        pcall(function() hueMoveConn:Disconnect() end)
-                        pcall(function() hueEndConn:Disconnect() end)
-                        
-                        tween(dialogOverlay, {BackgroundTransparency = 1}, {duration = 0.2})
-                        tween(dialog, {
-                            Size = UDim2.new(0, 0, 0, 0), 
-                            Position = UDim2.new(0.5, 0, 0.5, 0)
-                        }, {duration = 0.2})
-                        
-                        task.delay(0.2, function()
-                            if colorPickerGui then
-                                colorPickerGui:Destroy()
-                            end
-                        end)
-                    end
-
-                    cancelBtn.MouseButton1Click:Connect(closeDialog)
-
-                    doneBtn.MouseButton1Click:Connect(function()
-                        currentColor = Color3.fromHSV(workingH, workingS, workingV)
-                        currentH, currentS, currentV = workingH, workingS, workingV
-                        preview.BackgroundColor3 = currentColor
-                        
-                        if callback and type(callback) == "function" then
-                            safeCallback(callback, currentColor)
-                        end
-                        
-                        closeDialog()
-                    end)
-
-                    dialog.MouseButton1Click:Connect(function()
-                        -- Prevent click bubbling
-                    end)
-
-                    dialogOverlay.MouseButton1Click:Connect(function()
-                        closeDialog()
-                    end)
-
-                    dialog.Size = UDim2.new(0, 0, 0, 0)
-                    dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
-                    dialogOverlay.BackgroundTransparency = 1
-                    
-                    tween(dialogOverlay, {BackgroundTransparency = 0.5}, {duration = 0.2})
-                    tween(dialog, {
-                        Size = UDim2.new(0, 440, 0, 340), 
-                        Position = UDim2.new(0.5, -220, 0.5, -170)
-                    }, {duration = 0.2})
-                end
-
-                local clickConn = button.MouseButton1Click:Connect(function()
-                    createColorDialog()
-                end)
-                table.insert(connections, clickConn)
-
-                debouncedHover(button,
-                    function()
-                        tween(button, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.1})
-                        tween(buttonStroke, {Transparency = 0.5}, {duration = 0.1})
-                    end,
-                    function()
-                        tween(button, {BackgroundColor3 = theme.ButtonBackground}, {duration = 0.1})
-                        tween(buttonStroke, {Transparency = 0.7}, {duration = 0.1})
-                    end
-                )
-
-                return {
-                    Get = function() return currentColor end,
-                    Set = function(_, color)
-                        if typeof(color) == "Color3" then
-                            currentColor = color
-                            currentH, currentS, currentV = Color3.toHSV(color)
-                            preview.BackgroundColor3 = color
-                            if callback then safeCallback(callback, color) end
-                        end
-                    end
-                }
+    local currentColor = typeof(defaultColor) == "Color3" and defaultColor or Color3.fromRGB(255, 255, 255)
+    local currentH, currentS, currentV = Color3.toHSV(currentColor)
+    local connections = {}
+    
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, ResponsiveSize.buttonHeight)
+    container.BackgroundTransparency = 1
+    container.Parent = Section
+
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 1, 0)
+    button.BackgroundColor3 = theme.ButtonBackground
+    button.AutoButtonColor = false
+    button.Font = Enum.Font.Gotham
+    button.TextSize = ResponsiveSize.textSize
+    button.TextColor3 = theme.Text
+    button.Text = (name and name .. " " or "") .. "Color Picker"
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = container
+
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+    buttonCorner.Parent = button
+
+    local buttonStroke = Instance.new("UIStroke")
+    buttonStroke.Color = theme.ButtonBorder
+    buttonStroke.Thickness = 1
+    buttonStroke.Transparency = 0.7
+    buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    buttonStroke.Parent = button
+
+    local buttonPadding = Instance.new("UIPadding")
+    buttonPadding.PaddingLeft = UDim.new(0, 10)
+    buttonPadding.PaddingRight = UDim.new(0, 40)
+    buttonPadding.Parent = button
+
+    local previewSize = isMobile() and 22 or 26
+    local preview = Instance.new("Frame")
+    preview.Size = UDim2.new(0, previewSize, 0, previewSize)
+    preview.Position = UDim2.new(1, -(previewSize + 6), 0.5, -previewSize/2)
+    preview.BackgroundColor3 = currentColor
+    preview.BorderSizePixel = 0
+    preview.Parent = container
+
+    local previewCorner = Instance.new("UICorner")
+    previewCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+    previewCorner.Parent = preview
+
+    local previewStroke = Instance.new("UIStroke")
+    previewStroke.Color = theme.ButtonBorder
+    previewStroke.Thickness = 1
+    previewStroke.Transparency = 0.5
+    previewStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    previewStroke.Parent = preview
+
+    local function createColorDialog()
+        local guiParent = game:GetService("CoreGui")
+        local success, playerGui = pcall(function()
+            local plr = game:GetService("Players").LocalPlayer
+            if plr and plr:FindFirstChild("PlayerGui") then
+                return plr.PlayerGui
             end
+        end)
+        if success and playerGui then guiParent = playerGui end
+        
+        local colorPickerGui = Instance.new("ScreenGui")
+        colorPickerGui.Name = "ColorPickerOverlay"
+        colorPickerGui.DisplayOrder = 1000000000
+        colorPickerGui.ResetOnSpawn = false
+        colorPickerGui.IgnoreGuiInset = true
+        colorPickerGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        colorPickerGui.Parent = guiParent
+
+        local dialogOverlay = Instance.new("Frame")
+        dialogOverlay.Name = "ColorPickerDialog"
+        dialogOverlay.Size = UDim2.new(1, 0, 1, 0)
+        dialogOverlay.Position = UDim2.new(0, 0, 0, 0)
+        dialogOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        dialogOverlay.BackgroundTransparency = 0.5
+        dialogOverlay.ZIndex = 1
+        dialogOverlay.Active = true
+        dialogOverlay.Parent = colorPickerGui
+
+        local dialogWidth = ResponsiveSize.colorDialogWidth
+        local dialogHeight = ResponsiveSize.colorDialogHeight
+        
+        local dialog = Instance.new("Frame")
+        dialog.Size = UDim2.new(0, dialogWidth, 0, dialogHeight)
+        dialog.Position = UDim2.new(0.5, -dialogWidth/2, 0.5, -dialogHeight/2)
+        dialog.BackgroundColor3 = theme.SectionBackground
+        dialog.ZIndex = 2
+        dialog.Active = true
+        dialog.Parent = dialogOverlay
+
+        local dialogCorner = Instance.new("UICorner")
+        dialogCorner.CornerRadius = UDim.new(0, ResponsiveSize.cornerRadius)
+        dialogCorner.Parent = dialog
+
+        local dialogStroke = Instance.new("UIStroke")
+        dialogStroke.Color = theme.ButtonBorder
+        dialogStroke.Thickness = 1
+        dialogStroke.Transparency = 0.7
+        dialogStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        dialogStroke.Parent = dialog
+
+        addShadow(dialog, 0.6)
+
+        local title = Instance.new("TextLabel")
+        title.Text = name or "Color Picker"
+        title.Size = UDim2.new(1, -20, 0, 35)
+        title.Position = UDim2.new(0, 10, 0, 10)
+        title.BackgroundTransparency = 1
+        title.TextColor3 = theme.Text
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = ResponsiveSize.titleSize
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.ZIndex = 3
+        title.Parent = dialog
+
+        local workingH, workingS, workingV = currentH, currentS, currentV
+
+        -- Sat/Value map dimensions (responsive)
+        local mapWidth = isMobile() and (dialogWidth - 80) or 190
+        local mapHeight = isMobile() and (dialogHeight - 140) or 170
+        
+        local satVibMap = Instance.new("ImageLabel")
+        satVibMap.Size = UDim2.new(0, mapWidth, 0, mapHeight)
+        satVibMap.Position = UDim2.new(0, isMobile() and 15 or 20, 0, isMobile() and 50 or 60)
+        satVibMap.Image = "rbxassetid://4155801252"
+        satVibMap.BackgroundColor3 = Color3.fromHSV(workingH, 1, 1)
+        satVibMap.ZIndex = 3
+        satVibMap.Active = true
+        satVibMap.Parent = dialog
+
+        local mapCorner = Instance.new("UICorner")
+        mapCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+        mapCorner.Parent = satVibMap
+
+        local mapStroke = Instance.new("UIStroke")
+        mapStroke.Color = theme.ButtonBorder
+        mapStroke.Thickness = 1
+        mapStroke.Transparency = 0.7
+        mapStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        mapStroke.Parent = satVibMap
+
+        local cursorSize = isMobile() and 16 or 20
+        local satVibCursor = Instance.new("ImageLabel")
+        satVibCursor.Size = UDim2.new(0, cursorSize, 0, cursorSize)
+        satVibCursor.Position = UDim2.new(workingS, -cursorSize/2, 1 - workingV, -cursorSize/2)
+        satVibCursor.Image = "rbxassetid://4805639000"
+        satVibCursor.BackgroundTransparency = 1
+        satVibCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+        satVibCursor.ZIndex = 4
+        satVibCursor.Parent = satVibMap
+
+        -- Hue slider (responsive)
+        local sliderWidth = isMobile() and 10 or 14
+        local sliderHeight = isMobile() and mapHeight or 200
+        
+        local hueSlider = Instance.new("Frame")
+        hueSlider.Size = UDim2.new(0, sliderWidth, 0, sliderHeight)
+        hueSlider.Position = UDim2.new(0, mapWidth + (isMobile() and 25 : 30), 0, isMobile() and 50 or 60)
+        hueSlider.ZIndex = 3
+        hueSlider.Active = true
+        hueSlider.Parent = dialog
+
+        local hueCorner = Instance.new("UICorner")
+        hueCorner.CornerRadius = UDim.new(1, 0)
+        hueCorner.Parent = hueSlider
+
+        local hueStroke = Instance.new("UIStroke")
+        hueStroke.Color = theme.ButtonBorder
+        hueStroke.Thickness = 1
+        hueStroke.Transparency = 0.7
+        hueStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        hueStroke.Parent = hueSlider
+
+        local hueGradient = Instance.new("UIGradient")
+        hueGradient.Rotation = 90
+        local sequenceTable = {}
+        for i = 0, 1, 0.1 do
+            table.insert(sequenceTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
+        end
+        hueGradient.Color = ColorSequence.new(sequenceTable)
+        hueGradient.Parent = hueSlider
+
+        local hueCursorSize = isMobile() and 14 or 16
+        local hueCursor = Instance.new("ImageLabel")
+        hueCursor.Size = UDim2.new(0, hueCursorSize, 0, hueCursorSize)
+        hueCursor.Position = UDim2.new(0, -(hueCursorSize - sliderWidth)/2, workingH, -hueCursorSize/2)
+        hueCursor.Image = "rbxassetid://12266946128"
+        hueCursor.ImageColor3 = theme.InputBackground
+        hueCursor.BackgroundTransparency = 1
+        hueCursor.ZIndex = 4
+        hueCursor.Parent = hueSlider
+
+        -- Color displays (responsive positioning)
+        local displayWidth = isMobile() and 70 or 94
+        local displayHeight = isMobile() and 24 or 28
+        local displayY = dialogHeight - (isMobile() and 75 : 100)
+        
+        local oldColorDisplay = Instance.new("ImageLabel")
+        oldColorDisplay.Size = UDim2.new(0, displayWidth, 0, displayHeight)
+        oldColorDisplay.Position = UDim2.new(0, isMobile() and (dialogWidth - displayWidth*2 - 10)/2 : 120, 0, displayY)
+        oldColorDisplay.Image = GRADIENT_IMAGE
+        oldColorDisplay.ImageTransparency = 0.45
+        oldColorDisplay.ScaleType = Enum.ScaleType.Tile
+        oldColorDisplay.TileSize = UDim2.new(0, 40, 0, 40)
+        oldColorDisplay.ZIndex = 3
+        oldColorDisplay.Parent = dialog
+
+        local oldColorFrame = Instance.new("Frame")
+        oldColorFrame.Size = UDim2.new(1, 0, 1, 0)
+        oldColorFrame.BackgroundColor3 = currentColor
+        oldColorFrame.ZIndex = 4
+        oldColorFrame.Parent = oldColorDisplay
+
+        local oldCorner = Instance.new("UICorner")
+        oldCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius - 2)
+        oldCorner.Parent = oldColorDisplay
+
+        local oldFrameCorner = Instance.new("UICorner")
+        oldFrameCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius - 2)
+        oldFrameCorner.Parent = oldColorFrame
+
+        local oldStroke = Instance.new("UIStroke")
+        oldStroke.Color = theme.ButtonBorder
+        oldStroke.Thickness = 1
+        oldStroke.Transparency = 0.7
+        oldStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        oldStroke.Parent = oldColorDisplay
+
+        local newColorDisplay = Instance.new("ImageLabel")
+        newColorDisplay.Size = UDim2.new(0, displayWidth, 0, displayHeight)
+        newColorDisplay.Position = UDim2.new(0, isMobile() and (dialogWidth - displayWidth*2 - 10)/2 + displayWidth + 10 : 20, 0, displayY)
+        newColorDisplay.Image = GRADIENT_IMAGE
+        newColorDisplay.ImageTransparency = 0.45
+        newColorDisplay.ScaleType = Enum.ScaleType.Tile
+        newColorDisplay.TileSize = UDim2.new(0, 40, 0, 40)
+        newColorDisplay.ZIndex = 3
+        newColorDisplay.Parent = dialog
+
+        local newColorFrame = Instance.new("Frame")
+        newColorFrame.Size = UDim2.new(1, 0, 1, 0)
+        newColorFrame.BackgroundColor3 = Color3.fromHSV(workingH, workingS, workingV)
+        newColorFrame.ZIndex = 4
+        newColorFrame.Parent = newColorDisplay
+
+        local newCorner = Instance.new("UICorner")
+        newCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius - 2)
+        newCorner.Parent = newColorDisplay
+
+        local newFrameCorner = Instance.new("UICorner")
+        newFrameCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius - 2)
+        newFrameCorner.Parent = newColorFrame
+
+        local newStroke = Instance.new("UIStroke")
+        newStroke.Color = theme.ButtonBorder
+        newStroke.Thickness = 1
+        newStroke.Transparency = 0.7
+        newStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        newStroke.Parent = newColorDisplay
+
+        local function updateDisplay()
+            local newColor = Color3.fromHSV(workingH, workingS, workingV)
+            
+            satVibMap.BackgroundColor3 = Color3.fromHSV(workingH, 1, 1)
+            satVibCursor.Position = UDim2.new(workingS, -cursorSize/2, 1 - workingV, -cursorSize/2)
+            hueCursor.Position = UDim2.new(0, -(hueCursorSize - sliderWidth)/2, workingH, -hueCursorSize/2)
+            newColorFrame.BackgroundColor3 = newColor
+        end
+
+        local satVibDragging = false
+        local hueDragging = false
+
+        local satVibConn = satVibMap.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or
+               input.UserInputType == Enum.UserInputType.Touch then
+                satVibDragging = true
+            end
+        end)
+
+        local satVibMoveConn = UserInputService.InputChanged:Connect(function(input)
+            if satVibDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                                   input.UserInputType == Enum.UserInputType.Touch) then
+                local mouse = UserInputService:GetMouseLocation()
+                local mapPos = satVibMap.AbsolutePosition
+                local mapSize = satVibMap.AbsoluteSize
+                
+                local relX = math.clamp((mouse.X - mapPos.X) / mapSize.X, 0, 1)
+                local relY = math.clamp((mouse.Y - mapPos.Y) / mapSize.Y, 0, 1)
+                
+                workingS = relX
+                workingV = 1 - relY
+                updateDisplay()
+            end
+        end)
+
+        local satVibEndConn = UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or
+               input.UserInputType == Enum.UserInputType.Touch then
+                satVibDragging = false
+            end
+        end)
+
+        local hueConn = hueSlider.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or
+               input.UserInputType == Enum.UserInputType.Touch then
+                hueDragging = true
+            end
+        end)
+
+        local hueMoveConn = UserInputService.InputChanged:Connect(function(input)
+            if hueDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                               input.UserInputType == Enum.UserInputType.Touch) then
+                local mouse = UserInputService:GetMouseLocation()
+                local sliderPos = hueSlider.AbsolutePosition
+                local sliderSize = hueSlider.AbsoluteSize
+                
+                local relY = math.clamp((mouse.Y - sliderPos.Y) / sliderSize.Y, 0, 1)
+                workingH = relY
+                updateDisplay()
+            end
+        end)
+
+        local hueEndConn = UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or
+               input.UserInputType == Enum.UserInputType.Touch then
+                hueDragging = false
+            end
+        end)
+
+        -- Buttons (responsive)
+        local buttonContainer = Instance.new("Frame")
+        buttonContainer.Size = UDim2.new(0, isMobile() and (dialogWidth - 30) : 210, 0, ResponsiveSize.buttonHeight)
+        buttonContainer.Position = UDim2.new(0, isMobile() and 15 : 20, 0, dialogHeight - (isMobile() and 45 : 55))
+        buttonContainer.BackgroundTransparency = 1
+        buttonContainer.ZIndex = 3
+        buttonContainer.Parent = dialog
+
+        local buttonLayout = Instance.new("UIListLayout")
+        buttonLayout.FillDirection = Enum.FillDirection.Horizontal
+        buttonLayout.Padding = UDim.new(0, 10)
+        buttonLayout.Parent = buttonContainer
+
+        local btnWidth = isMobile() and (dialogWidth - 50)/2 : 100
+        
+        local cancelBtn = Instance.new("TextButton")
+        cancelBtn.Size = UDim2.new(0, btnWidth, 1, 0)
+        cancelBtn.BackgroundColor3 = theme.ButtonBackground
+        cancelBtn.TextColor3 = theme.Text
+        cancelBtn.Font = Enum.Font.Gotham
+        cancelBtn.TextSize = ResponsiveSize.textSize
+        cancelBtn.Text = "Cancel"
+        cancelBtn.AutoButtonColor = false
+        cancelBtn.ZIndex = 4
+        cancelBtn.Parent = buttonContainer
+
+        local cancelCorner = Instance.new("UICorner")
+        cancelCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+        cancelCorner.Parent = cancelBtn
+
+        local cancelStroke = Instance.new("UIStroke")
+        cancelStroke.Color = theme.ButtonBorder
+        cancelStroke.Thickness = 1
+        cancelStroke.Transparency = 0.7
+        cancelStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        cancelStroke.Parent = cancelBtn
+
+        local doneBtn = Instance.new("TextButton")
+        doneBtn.Size = UDim2.new(0, btnWidth, 1, 0)
+        doneBtn.BackgroundColor3 = theme.Accent
+        doneBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        doneBtn.Font = Enum.Font.Gotham
+        doneBtn.TextSize = ResponsiveSize.textSize
+        doneBtn.Text = "Done"
+        doneBtn.AutoButtonColor = false
+        doneBtn.ZIndex = 4
+        doneBtn.Parent = buttonContainer
+
+        local doneCorner = Instance.new("UICorner")
+        doneCorner.CornerRadius = UDim.new(0, ResponsiveSize.smallCornerRadius)
+        doneCorner.Parent = doneBtn
+
+        local doneStroke = Instance.new("UIStroke")
+        doneStroke.Color = theme.Accent
+        doneStroke.Thickness = 1
+        doneStroke.Transparency = 0
+        doneStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        doneStroke.Parent = doneBtn
+
+        debouncedHover(cancelBtn,
+            function()
+                tween(cancelBtn, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.1})
+                tween(cancelStroke, {Transparency = 0.5}, {duration = 0.1})
+            end,
+            function()
+                tween(cancelBtn, {BackgroundColor3 = theme.ButtonBackground}, {duration = 0.1})
+                tween(cancelStroke, {Transparency = 0.7}, {duration = 0.1})
+            end
+        )
+
+        debouncedHover(doneBtn,
+            function()
+                tween(doneBtn, {BackgroundColor3 = theme.AccentHover}, {duration = 0.1})
+            end,
+            function()
+                tween(doneBtn, {BackgroundColor3 = theme.Accent}, {duration = 0.1})
+            end
+        )
+
+        local function closeDialog()
+            pcall(function() satVibConn:Disconnect() end)
+            pcall(function() satVibMoveConn:Disconnect() end)
+            pcall(function() satVibEndConn:Disconnect() end)
+            pcall(function() hueConn:Disconnect() end)
+            pcall(function() hueMoveConn:Disconnect() end)
+            pcall(function() hueEndConn:Disconnect() end)
+            
+            tween(dialogOverlay, {BackgroundTransparency = 1}, {duration = 0.2})
+            tween(dialog, {
+                Size = UDim2.new(0, 0, 0, 0), 
+                Position = UDim2.new(0.5, 0, 0.5, 0)
+            }, {duration = 0.2})
+            
+            task.delay(0.2, function()
+                if colorPickerGui then
+                    colorPickerGui:Destroy()
+                end
+            end)
+        end
+
+        cancelBtn.MouseButton1Click:Connect(closeDialog)
+
+        doneBtn.MouseButton1Click:Connect(function()
+            currentColor = Color3.fromHSV(workingH, workingS, workingV)
+            currentH, currentS, currentV = workingH, workingS, workingV
+            preview.BackgroundColor3 = currentColor
+            
+            if callback and type(callback) == "function" then
+                safeCallback(callback, currentColor)
+            end
+            
+            closeDialog()
+        end)
+
+        dialog.MouseButton1Click:Connect(function() end)
+        dialogOverlay.MouseButton1Click:Connect(closeDialog)
+
+        -- Animate in
+        dialog.Size = UDim2.new(0, 0, 0, 0)
+        dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
+        dialogOverlay.BackgroundTransparency = 1
+        
+        tween(dialogOverlay, {BackgroundTransparency = 0.5}, {duration = 0.2})
+        tween(dialog, {
+            Size = UDim2.new(0, dialogWidth, 0, dialogHeight), 
+            Position = UDim2.new(0.5, -dialogWidth/2, 0.5, -dialogHeight/2)
+        }, {duration = 0.2})
+    end
+
+    button.MouseButton1Click:Connect(function()
+        createColorDialog()
+    end)
+
+    debouncedHover(button,
+        function()
+            tween(button, {BackgroundColor3 = theme.ButtonHover}, {duration = 0.1})
+            tween(buttonStroke, {Transparency = 0.5}, {duration = 0.1})
+        end,
+        function()
+            tween(button, {BackgroundColor3 = theme.ButtonBackground}, {duration = 0.1})
+            tween(buttonStroke, {Transparency = 0.7}, {duration = 0.1})
+        end
+    )
+
+    return {
+        Get = function() return currentColor end,
+        Set = function(_, color)
+            if typeof(color) == "Color3" then
+                currentColor = color
+                currentH, currentS, currentV = Color3.toHSV(color)
+                preview.BackgroundColor3 = color
+                if callback then safeCallback(callback, color) end
+            end
+        end
+    }
+end
 
             SectionObj.NewColorPicker = SectionObj.NewColorpicker
             SectionObj.NewTextBox = SectionObj.NewTextbox
@@ -3278,7 +3233,7 @@ function Kour6anHub.CreateLib(title, themeName)
 
     local closeConn = CloseBtn.MouseButton1Click:Connect(function()
         local pressTween = tween(CloseBtn, {
-            Size = UDim2.new(0, 32, 0, 32),
+            Size = UDim2.new(0, ResponsiveSize.controlButtonSize - 3, 0, ResponsiveSize.controlButtonSize - 3),
             BackgroundColor3 = Color3.fromRGB(200, 35, 51)
         }, {duration = 0.08})
         
@@ -3300,14 +3255,14 @@ function Kour6anHub.CreateLib(title, themeName)
         function()
             tween(MinimizeBtn, {
                 BackgroundColor3 = theme.ButtonHover,
-                Size = UDim2.new(0, 37, 0, 37)
+                Size = UDim2.new(0, ResponsiveSize.controlButtonSize + 2, 0, ResponsiveSize.controlButtonSize + 2)
             }, {duration = 0.1})
             tween(MinimizeBtnStroke, {Transparency = 0.5}, {duration = 0.1})
         end,
         function()
             tween(MinimizeBtn, {
                 BackgroundColor3 = theme.ButtonBackground,
-                Size = UDim2.new(0, 35, 0, 35)
+                Size = UDim2.new(0, ResponsiveSize.controlButtonSize, 0, ResponsiveSize.controlButtonSize)
             }, {duration = 0.1})
             tween(MinimizeBtnStroke, {Transparency = 0.7}, {duration = 0.1})
         end
@@ -3317,13 +3272,13 @@ function Kour6anHub.CreateLib(title, themeName)
         function()
             tween(CloseBtn, {
                 BackgroundColor3 = Color3.fromRGB(240, 73, 89),
-                Size = UDim2.new(0, 37, 0, 37)
+                Size = UDim2.new(0, ResponsiveSize.controlButtonSize + 2, 0, ResponsiveSize.controlButtonSize + 2)
             }, {duration = 0.1})
         end,
         function()
             tween(CloseBtn, {
                 BackgroundColor3 = Color3.fromRGB(220, 53, 69),
-                Size = UDim2.new(0, 35, 0, 35)
+                Size = UDim2.new(0, ResponsiveSize.controlButtonSize, 0, ResponsiveSize.controlButtonSize)
             }, {duration = 0.1})
         end
     )
